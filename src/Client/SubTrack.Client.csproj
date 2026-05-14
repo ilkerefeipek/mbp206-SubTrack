@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.16" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.16" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tailwind sources tracked for incremental builds -->
+    <TailwindSource Include="Styles\app.css" />
+    <TailwindSource Include="Styles\tailwind.config.js" />
+    <TailwindSource Include="**\*.razor" />
+  </ItemGroup>
+
+  <Target Name="BuildTailwind" BeforeTargets="Build" Inputs="@(TailwindSource)" Outputs="wwwroot\css\app.css">
+    <Message Text="Building Tailwind CSS via standalone CLI ..." Importance="high" />
+    <Exec Command="..\..\tools\tailwindcss.exe -i Styles\app.css -o wwwroot\css\app.css --config Styles\tailwind.config.js --minify" />
+  </Target>
+
+</Project>

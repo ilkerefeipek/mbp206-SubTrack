@@ -1,0 +1,28 @@
+{
+  "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
+  "tasks": [
+    {
+      "name": "format",
+      "group": "pre-commit",
+      "command": "dotnet",
+      "args": ["format", "--verify-no-changes", "--severity", "warn"]
+    },
+    {
+      "name": "build",
+      "group": "pre-commit",
+      "command": "dotnet",
+      "args": ["build", "--nologo", "/p:TreatWarningsAsErrors=true", "--verbosity", "minimal"]
+    },
+    {
+      "name": "conventional-commit",
+      "group": "commit-msg",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-File", ".husky/check-commit-msg.ps1",
+        "${args}"
+      ]
+    }
+  ]
+}

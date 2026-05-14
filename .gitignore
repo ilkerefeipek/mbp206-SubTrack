@@ -1,0 +1,104 @@
+# =============================================================
+# SubTrack .gitignore
+# =============================================================
+
+# --- .NET build artifacts ---
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.userprefs
+*.cache
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+project.lock.json
+project.fragment.lock.json
+artifacts/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Bb]uild/
+[Bb]uildResults/
+bld/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+publish/
+PublishProfiles/
+.vs/
+
+# --- Visual Studio cache ---
+*.vsidx
+*.lock
+
+# --- EF Core local files ---
+*.db
+*.db-shm
+*.db-wal
+
+# --- Test results / coverage ---
+[Tt]est[Rr]esult*/
+TestResults/
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+coverage/
+
+# --- Node artifacts (in case Tailwind contributor uses npm fallback) ---
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+.pnpm-debug.log*
+
+# --- Playwright ---
+.playwright/
+playwright-report/
+playwright/.cache/
+test-results/
+screenshots/
+.playwright-mcp/
+
+# --- Tailwind standalone CLI binary ---
+tools/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Editors ---
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+
+# --- Secrets (never commit) ---
+*.env
+*.env.local
+*.env.*.local
+secrets.json
+appsettings.*.local.json
+appsettings.*.Local.json
+*.pfx
+
+# --- Logs ---
+*.log
+
+# --- Personal AI tooling (LOCAL ONLY) ---
+CLAUDE.md
+.claude.md
+.claude/
+
+# --- Local planning / sprint artifacts ---
+docs/sprint*
+docs/feature_dev_plans/
+docs/superpowers/
+docs/screenshots/
