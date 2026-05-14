@@ -1,0 +1,29 @@
+<span class="@CssClass">@ChildContent</span>
+
+@code {
+    public enum Variant { Success, Warning, Danger, Primary, Neutral }
+    public enum Size { Sm, Md }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public Variant Color { get; set; } = Variant.Neutral;
+    [Parameter] public Size BadgeSize { get; set; } = Size.Sm;
+
+    private string CssClass =>
+        $"inline-flex items-center font-medium rounded-full {SizeClass()} {VariantClass()}";
+
+    private string SizeClass() => BadgeSize switch
+    {
+        Size.Sm => "px-2 py-0.5 text-xs",
+        Size.Md => "px-2.5 py-1 text-sm",
+        _ => ""
+    };
+
+    private string VariantClass() => Color switch
+    {
+        Variant.Success => "bg-green-100 text-success",
+        Variant.Warning => "bg-amber-100 text-warning",
+        Variant.Danger => "bg-red-100 text-danger",
+        Variant.Primary => "bg-primary-light text-primary-dark",
+        _ => "bg-slate-100 text-slate-700"
+    };
+}

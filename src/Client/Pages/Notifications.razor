@@ -1,0 +1,16 @@
+@page "/notifications"
+@attribute [Authorize]
+
+<PageTitle>Bildirimler — SubTrack</PageTitle>
+
+<div class="space-y-6">
+    <header>
+        <h1 class="text-2xl font-bold text-primary-dark tracking-tight">Bildirimler</h1>
+        <p class="text-sm text-slate-500 mt-1">S5/S6: gercek bildirim listesi + okundu isaretle.</p>
+    </header>
+    <Card>
+        <EmptyState IconName="bell"
+                    Title="Bildirim listesi bekleniyor"
+                    Description="Sprint S5: okunmamis bildirim badge + okundu/silindi aksiyonlari." />
+    </Card>
+</div>

@@ -1,0 +1,121 @@
+@page "/login"
+@attribute [AllowAnonymous]
+@inject IAuthApi AuthApi
+@inject JwtAuthenticationStateProvider JwtState
+@inject NavigationManager Navigation
+@inject IToastService Toasts
+
+<PageTitle>Giris — SubTrack</PageTitle>
+
+<div class="min-h-screen flex bg-slate-50">
+    @* Brand panel — desktop only *@
+    <aside class="hidden lg:flex w-1/2 bg-primary-dark text-white flex-col justify-between p-12 relative overflow-hidden">
+        <div>
+            <h1 class="text-3xl font-bold flex items-center gap-3">
+                <span class="w-3 h-8 bg-accent rounded-sm" aria-hidden="true"></span>
+                SubTrack
+            </h1>
+            <p class="text-white/70 text-sm mt-2">Akilli Abonelik Yonetimi</p>
+        </div>
+        <div class="max-w-md">
+            <p class="text-2xl font-semibold leading-tight mb-3">Aboneliklerinizi tek yerden yonetin.</p>
+            <p class="text-white/70">
+                Otomatik yenileme uyarilari, kullanilmayan abonelik tespiti ve aylik harcama analizleri ile abonelik bohcanizi gorunur hale getirin.
+            </p>
+        </div>
+        <p class="text-xs text-white/40">MBP 206 — Izmir Ekonomi Universitesi · Grup 2.2</p>
+    </aside>
+
+    @* Form panel *@
+    <section class="flex-1 flex items-center justify-center px-6 py-12">
+        <Card Class="w-full max-w-md" BodyClass="p-8">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-primary-dark">Tekrar hos geldiniz</h2>
+                <p class="text-sm text-slate-500 mt-1">Devam etmek icin e-posta ve parolanizla giris yapin.</p>
+            </div>
+
+            <EditForm Model="_form" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+
+                <div class="space-y-4">
+                    <Input TValue="string" Label="E-posta" Type="email" Required="true"
+                           Placeholder="ornek@subtrack.app"
+                           @bind-Value="_form.Email" />
+                    <Input TValue="string" Label="Parola" Type="password" Required="true"
+                           Placeholder="••••••••"
+                           @bind-Value="_form.Password" />
+                </div>
+
+                <div class="mt-6">
+                    <Button Type="submit"
+                            Variant="Button.ButtonVariant.Primary"
+                            Size="Button.ButtonSize.Lg"
+                            Loading="_loading">
+                        Giris Yap
+                    </Button>
+                </div>
+
+                @if (!string.IsNullOrEmpty(_error))
+                {
+                    <p class="mt-4 text-sm text-danger" role="alert">@_error</p>
+                }
+            </EditForm>
+
+            <p class="mt-8 text-sm text-slate-600 text-center">
+                Hesabin yok mu?
+                <a href="/register" class="text-primary font-medium hover:underline">Kayit ol</a>
+            </p>
+        </Card>
+    </section>
+</div>
+
+@code {
+    private LoginForm _form = new();
+    private bool _loading;
+    private string? _error;
+
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+
+    private async Task HandleLogin()
+    {
+        _error = null;
+        _loading = true;
+        try
+        {
+            var auth = await AuthApi.LoginAsync(new LoginRequest(_form.Email, _form.Password));
+            await JwtState.SetAuthenticatedUserAsync(auth.Token);
+            Toasts.ShowSuccess($"Hos geldiniz, {auth.User.FirstName}.");
+            Navigation.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl, forceLoad: false);
+        }
+        catch (ApiException ex) when (ex.IsUnauthorized)
+        {
+            _error = "E-posta veya parola hatali.";
+        }
+        catch (ApiException ex) when (ex.IsRateLimited)
+        {
+            _error = "Cok fazla deneme. Lutfen biraz bekleyip tekrar deneyin.";
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Message;
+        }
+        catch
+        {
+            _error = "Beklenmeyen bir hata olustu. Lutfen sonra tekrar deneyin.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private sealed class LoginForm
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "E-posta gereklidir.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Gecerli bir e-posta giriniz.")]
+        public string Email { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Parola gereklidir.")]
+        public string Password { get; set; } = "";
+    }
+}

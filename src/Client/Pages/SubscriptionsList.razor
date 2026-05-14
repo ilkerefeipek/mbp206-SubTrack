@@ -1,0 +1,21 @@
+@page "/subscriptions"
+@attribute [Authorize]
+
+<PageTitle>Abonelikler — SubTrack</PageTitle>
+
+<div class="space-y-6">
+    <header class="flex items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-primary-dark tracking-tight">Abonelikler</h1>
+            <p class="text-sm text-slate-500 mt-1">S5'te tam tablo + filtre + aksiyon menusu burada gelecek.</p>
+        </div>
+        <Button Variant="Button.ButtonVariant.Primary" IconName="credit-card">
+            Yeni Abonelik
+        </Button>
+    </header>
+    <Card>
+        <EmptyState IconName="inbox"
+                    Title="Liste bekleniyor"
+                    Description="Sprint S5: filter chip'leri, kategori filtresi, sirala/ara, kebab menu CRUD aksiyonlari." />
+    </Card>
+</div>

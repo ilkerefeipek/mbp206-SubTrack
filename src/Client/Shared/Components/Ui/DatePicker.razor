@@ -1,0 +1,50 @@
+<div class="flex flex-col gap-1">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="text-sm font-medium text-slate-700">
+            @Label
+            @if (Required)
+            {
+                <span class="text-danger ml-0.5" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+    <input type="date"
+           class="@InputClass"
+           value="@(Value?.ToString("yyyy-MM-dd"))"
+           min="@(Min?.ToString("yyyy-MM-dd"))"
+           max="@(Max?.ToString("yyyy-MM-dd"))"
+           required="@Required"
+           @onchange="HandleChange" />
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <p class="text-sm text-danger" role="alert">@Error</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public DateOnly? Value { get; set; }
+    [Parameter] public DateOnly? Min { get; set; }
+    [Parameter] public DateOnly? Max { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public EventCallback<DateOnly?> ValueChanged { get; set; }
+
+    private string InputClass =>
+        "w-full px-3 py-2 text-sm bg-white border rounded-lg text-slate-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 "
+        + (Error is not null ? "border-danger" : "border-slate-300");
+
+    private async Task HandleChange(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString();
+        if (DateOnly.TryParse(raw, out var parsed))
+        {
+            await ValueChanged.InvokeAsync(parsed);
+        }
+        else
+        {
+            await ValueChanged.InvokeAsync(null);
+        }
+    }
+}
