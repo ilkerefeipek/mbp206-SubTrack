@@ -107,6 +107,14 @@ public sealed class GlobalExceptionHandler(
             Status = StatusCodes.Status401Unauthorized
         }),
 
+        ForbiddenException fe => (StatusCodes.Status403Forbidden, new ProblemDetails
+        {
+            Type = "https://tools.ietf.org/html/rfc7807",
+            Title = "Forbidden",
+            Detail = fe.Message,
+            Status = StatusCodes.Status403Forbidden
+        }),
+
         _ => (StatusCodes.Status500InternalServerError, new ProblemDetails
         {
             Type = "https://tools.ietf.org/html/rfc7807",
