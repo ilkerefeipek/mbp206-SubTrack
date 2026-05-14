@@ -1,0 +1,68 @@
+@typeparam TItem
+@typeparam TValue
+
+<div class="flex flex-col gap-1">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="text-sm font-medium text-slate-700">@Label</label>
+    }
+    <select class="@SelectClass"
+            disabled="@Disabled"
+            @onchange="OnSelectionChanged">
+        @if (!string.IsNullOrEmpty(Placeholder))
+        {
+            <option value="">@Placeholder</option>
+        }
+        @if (Options is not null)
+        {
+            @foreach (var item in Options)
+            {
+                var v = ValueSelector(item)?.ToString() ?? string.Empty;
+                <option value="@v" selected="@(v == CurrentValueString)">@DisplaySelector(item)</option>
+            }
+        }
+    </select>
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <p class="text-sm text-danger" role="alert">@Error</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public IEnumerable<TItem>? Options { get; set; }
+    [Parameter, EditorRequired] public Func<TItem, string> DisplaySelector { get; set; } = _ => "";
+    [Parameter, EditorRequired] public Func<TItem, TValue?> ValueSelector { get; set; } = _ => default;
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+
+    private string CurrentValueString => Value?.ToString() ?? string.Empty;
+
+    private string SelectClass =>
+        "w-full px-3 py-2 text-sm bg-white border rounded-lg text-slate-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:bg-slate-50 "
+        + (Error is not null ? "border-danger" : "border-slate-300");
+
+    private async Task OnSelectionChanged(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString();
+        if (string.IsNullOrEmpty(raw))
+        {
+            await ValueChanged.InvokeAsync(default);
+            return;
+        }
+        try
+        {
+            TValue? converted = typeof(TValue).IsEnum
+                ? (TValue)Enum.Parse(typeof(TValue), raw, ignoreCase: true)
+                : (TValue?)Convert.ChangeType(raw, typeof(TValue));
+            await ValueChanged.InvokeAsync(converted);
+        }
+        catch
+        {
+            await ValueChanged.InvokeAsync(default);
+        }
+    }
+}

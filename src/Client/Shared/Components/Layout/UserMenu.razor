@@ -1,0 +1,75 @@
+@inject AuthenticationStateProvider AuthState
+@inject IAuthApi AuthApi
+@inject JwtAuthenticationStateProvider JwtState
+@inject NavigationManager Navigation
+@inject IToastService Toasts
+
+<div class="relative">
+    <button class="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 transition focus:outline-none focus-visible:ring-2 ring-primary/40"
+            @onclick="ToggleMenu"
+            aria-haspopup="true"
+            aria-expanded="@_isOpen">
+        <div class="w-9 h-9 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm">
+            @_initials
+        </div>
+    </button>
+
+    @if (_isOpen)
+    {
+        <div class="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-30">
+            <div class="px-4 py-3 border-b border-slate-100">
+                <p class="text-sm font-medium text-slate-900 truncate">@_displayName</p>
+                <p class="text-xs text-slate-500 truncate">@_email</p>
+            </div>
+            <a href="/profile" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
+                <Icon Name="user" Class="w-4 h-4" />
+                Profil
+            </a>
+            <a href="/settings" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
+                <Icon Name="settings" Class="w-4 h-4" />
+                Ayarlar
+            </a>
+            <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-danger hover:bg-red-50 transition focus:outline-none focus-visible:ring-2 ring-primary/40"
+                    @onclick="LogoutAsync">
+                <Icon Name="log-out" Class="w-4 h-4" />
+                Cikis Yap
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isOpen;
+    private string _initials = "?";
+    private string _displayName = "Kullanici";
+    private string _email = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthState.GetAuthenticationStateAsync();
+        if (state.User.Identity?.IsAuthenticated ?? false)
+        {
+            _email = state.User.FindFirst("email")?.Value ?? "";
+            _displayName = !string.IsNullOrEmpty(_email) ? _email.Split('@')[0] : "Kullanici";
+            _initials = _displayName.Length > 0 ? _displayName[0].ToString().ToUpperInvariant() : "?";
+        }
+    }
+
+    private void ToggleMenu() => _isOpen = !_isOpen;
+
+    private async Task LogoutAsync()
+    {
+        _isOpen = false;
+        try
+        {
+            await AuthApi.LogoutAsync();
+        }
+        catch
+        {
+            // Best-effort: even if backend fails, clear local state.
+        }
+        await JwtState.ClearAuthenticatedUserAsync();
+        Toasts.ShowInfo("Cikis yapildi.");
+        Navigation.NavigateTo("/login", forceLoad: false);
+    }
+}

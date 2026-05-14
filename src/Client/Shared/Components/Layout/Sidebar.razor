@@ -1,0 +1,69 @@
+@inject AuthenticationStateProvider AuthState
+
+<aside class="hidden lg:flex flex-col w-64 bg-primary-dark text-white">
+    <div class="px-6 py-6 border-b border-white/10">
+        <a href="/" class="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <span class="w-2 h-6 bg-accent rounded-sm" aria-hidden="true"></span>
+            SubTrack
+        </a>
+        <p class="text-xs text-white/60 mt-1">Abonelik Yonetimi</p>
+    </div>
+
+    <nav class="flex-1 px-3 py-5 space-y-1">
+        <NavLink class="@NavClass" ActiveClass="@NavActive" Match="NavLinkMatch.All" href="/">
+            <Icon Name="home" Class="w-5 h-5" />
+            Dashboard
+        </NavLink>
+        <NavLink class="@NavClass" ActiveClass="@NavActive" href="/subscriptions">
+            <Icon Name="credit-card" Class="w-5 h-5" />
+            Abonelikler
+        </NavLink>
+        <NavLink class="@NavClass" ActiveClass="@NavActive" href="/analytics">
+            <Icon Name="bar-chart" Class="w-5 h-5" />
+            Analiz
+        </NavLink>
+        <NavLink class="@NavClass" ActiveClass="@NavActive" href="/notifications">
+            <Icon Name="bell" Class="w-5 h-5" />
+            Bildirimler
+        </NavLink>
+        <NavLink class="@NavClass" ActiveClass="@NavActive" href="/settings">
+            <Icon Name="settings" Class="w-5 h-5" />
+            Ayarlar
+        </NavLink>
+    </nav>
+
+    <div class="px-4 py-4 border-t border-white/10">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-accent text-primary-dark font-bold flex items-center justify-center text-sm">
+                @_initials
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium truncate">@_displayName</p>
+                <p class="text-xs text-white/60 truncate">@_email</p>
+            </div>
+        </div>
+    </div>
+</aside>
+
+@code {
+    private string NavClass =>
+        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60";
+
+    private string NavActive => "bg-primary text-white";
+
+    private string _initials = "?";
+    private string _displayName = "Misafir";
+    private string _email = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthState.GetAuthenticationStateAsync();
+        var user = state.User;
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            _email = user.FindFirst("email")?.Value ?? "";
+            _displayName = !string.IsNullOrEmpty(_email) ? _email.Split('@')[0] : "Kullanici";
+            _initials = _displayName.Length > 0 ? _displayName[0].ToString().ToUpperInvariant() : "?";
+        }
+    }
+}

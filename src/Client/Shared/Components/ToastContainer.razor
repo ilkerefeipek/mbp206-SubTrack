@@ -1,0 +1,76 @@
+@implements IDisposable
+@inject IToastService Toasts
+
+<div class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+    @foreach (var t in _toasts)
+    {
+        <div role="status" aria-live="polite"
+             class="@($"pointer-events-auto rounded-lg shadow-lg border px-4 py-3 flex items-start gap-3 bg-white {BorderClass(t.Variant)}")">
+            <span class="@($"mt-0.5 inline-block w-2 h-2 rounded-full {DotClass(t.Variant)}")"></span>
+            <p class="flex-1 text-sm text-slate-800 leading-snug">@t.Message</p>
+            <button class="text-slate-400 hover:text-slate-700 transition focus:outline-none focus-visible:ring-2 ring-primary/40 rounded"
+                    aria-label="Bildirimi kapat" @onclick="() => Remove(t.Id)">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<ToastMessage> _toasts = new();
+
+    protected override void OnInitialized()
+    {
+        Toasts.OnShow += HandleShow;
+        Toasts.OnDismiss += HandleDismiss;
+    }
+
+    private async void HandleShow(ToastMessage toast)
+    {
+        _toasts.Add(toast);
+        await InvokeAsync(StateHasChanged);
+
+        if (toast.DurationMs > 0)
+        {
+            _ = AutoDismissAsync(toast.Id, toast.DurationMs);
+        }
+    }
+
+    private async Task AutoDismissAsync(Guid id, int delayMs)
+    {
+        await Task.Delay(delayMs);
+        HandleDismiss(id);
+    }
+
+    private async void HandleDismiss(Guid id)
+    {
+        if (_toasts.RemoveAll(t => t.Id == id) > 0)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void Remove(Guid id) => HandleDismiss(id);
+
+    private static string BorderClass(ToastVariant v) => v switch
+    {
+        ToastVariant.Success => "border-l-4 border-l-success",
+        ToastVariant.Error => "border-l-4 border-l-danger",
+        ToastVariant.Warning => "border-l-4 border-l-warning",
+        _ => "border-l-4 border-l-primary"
+    };
+
+    private static string DotClass(ToastVariant v) => v switch
+    {
+        ToastVariant.Success => "bg-success",
+        ToastVariant.Error => "bg-danger",
+        ToastVariant.Warning => "bg-warning",
+        _ => "bg-primary"
+    };
+
+    public void Dispose()
+    {
+        Toasts.OnShow -= HandleShow;
+        Toasts.OnDismiss -= HandleDismiss;
+    }
+}

@@ -1,0 +1,72 @@
+@typeparam TValue
+
+<div class="flex flex-col gap-1">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label for="@_id" class="text-sm font-medium text-slate-700">
+            @Label
+            @if (Required)
+            {
+                <span class="text-danger ml-0.5" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+    <input id="@_id"
+           type="@Type"
+           class="@InputClass"
+           value="@CurrentValueAsString"
+           placeholder="@Placeholder"
+           required="@Required"
+           disabled="@Disabled"
+           @oninput="OnInputChanged"
+           aria-invalid="@(Error is not null)"
+           aria-describedby="@(_descId)" />
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <p id="@_descId" class="text-sm text-danger" role="alert">@Error</p>
+    }
+    else if (!string.IsNullOrEmpty(HelperText))
+    {
+        <p id="@_descId" class="text-sm text-slate-500">@HelperText</p>
+    }
+</div>
+
+@code {
+    private readonly string _id = $"in-{Guid.NewGuid():N}";
+    private string _descId => $"{_id}-desc";
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string Type { get; set; } = "text";
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string? HelperText { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+
+    private string CurrentValueAsString => Value?.ToString() ?? string.Empty;
+
+    private string InputClass =>
+        "w-full px-3 py-2 text-sm bg-white border rounded-lg text-slate-900 placeholder:text-slate-400 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:bg-slate-50 disabled:text-slate-500 "
+        + (Error is not null ? "border-danger" : "border-slate-300");
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString();
+        if (raw is null)
+        {
+            await ValueChanged.InvokeAsync(default);
+            return;
+        }
+        try
+        {
+            var converted = (TValue?)Convert.ChangeType(raw, typeof(TValue));
+            await ValueChanged.InvokeAsync(converted);
+        }
+        catch
+        {
+            await ValueChanged.InvokeAsync(default);
+        }
+    }
+}

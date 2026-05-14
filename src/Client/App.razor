@@ -1,0 +1,23 @@
+@using SubTrack.Client.Shared
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+                <Authorizing>
+                    <p class="text-slate-500 p-6">Yukleniyor...</p>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Sayfa Bulunamadi</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <NotFoundPage />
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

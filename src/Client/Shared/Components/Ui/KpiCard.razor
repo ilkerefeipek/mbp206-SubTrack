@@ -1,0 +1,55 @@
+<div class="rounded-xl bg-white border border-slate-200 shadow-sm p-5 flex flex-col gap-3">
+    <div class="flex items-start justify-between gap-3">
+        <span class="text-sm font-medium text-slate-500">@Label</span>
+        @if (!string.IsNullOrEmpty(IconName))
+        {
+            <span class="@($"w-9 h-9 rounded-lg flex items-center justify-center {AccentBgClass} {AccentTextClass}")">
+                <Icon Name="@IconName" Class="w-5 h-5" />
+            </span>
+        }
+    </div>
+    <div class="flex items-baseline gap-2">
+        <span class="text-3xl font-bold text-primary-dark tracking-tight">@Value</span>
+        @if (!string.IsNullOrEmpty(Unit))
+        {
+            <span class="text-sm font-medium text-slate-500">@Unit</span>
+        }
+    </div>
+    @if (Trend.HasValue)
+    {
+        <span class="@($"text-xs font-medium {TrendClass()}")">
+            @(Trend.Value > 0 ? "+" : "")@Trend.Value.ToString("0.#")% gectigimiz aya gore
+        </span>
+    }
+</div>
+
+@code {
+    public enum Accent { Primary, Success, Warning, Danger }
+
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public string Value { get; set; } = "";
+    [Parameter] public string? Unit { get; set; }
+    [Parameter] public string? IconName { get; set; }
+    [Parameter] public Accent AccentColor { get; set; } = Accent.Primary;
+    [Parameter] public decimal? Trend { get; set; }
+
+    private string AccentBgClass => AccentColor switch
+    {
+        Accent.Primary => "bg-primary-light",
+        Accent.Success => "bg-green-100",
+        Accent.Warning => "bg-amber-100",
+        Accent.Danger => "bg-red-100",
+        _ => ""
+    };
+
+    private string AccentTextClass => AccentColor switch
+    {
+        Accent.Primary => "text-primary",
+        Accent.Success => "text-success",
+        Accent.Warning => "text-warning",
+        Accent.Danger => "text-danger",
+        _ => ""
+    };
+
+    private string TrendClass() => Trend!.Value >= 0 ? "text-success" : "text-danger";
+}

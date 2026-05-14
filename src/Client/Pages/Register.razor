@@ -1,0 +1,113 @@
+@page "/register"
+@attribute [AllowAnonymous]
+@inject IAuthApi AuthApi
+@inject JwtAuthenticationStateProvider JwtState
+@inject NavigationManager Navigation
+@inject IToastService Toasts
+
+<PageTitle>Kayit Ol — SubTrack</PageTitle>
+
+<div class="min-h-screen flex items-center justify-center px-6 py-12 bg-slate-50">
+    <Card Class="w-full max-w-md" BodyClass="p-8">
+        <h1 class="text-2xl font-bold text-primary-dark">Yeni hesap olustur</h1>
+        <p class="text-sm text-slate-500 mt-1 mb-6">SubTrack hesabinizi 30 saniyede acin.</p>
+
+        <EditForm Model="_form" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <Input TValue="string" Label="Ad" Required="true" @bind-Value="_form.FirstName" />
+                    <Input TValue="string" Label="Soyad" Required="true" @bind-Value="_form.LastName" />
+                </div>
+                <Input TValue="string" Label="E-posta" Type="email" Required="true" @bind-Value="_form.Email" />
+                <Input TValue="string" Label="Parola" Type="password" Required="true"
+                       HelperText="En az 8 karakter, 1 harf ve 1 rakam."
+                       @bind-Value="_form.Password" />
+            </div>
+
+            <div class="mt-6">
+                <Button Type="submit"
+                        Variant="Button.ButtonVariant.Primary"
+                        Size="Button.ButtonSize.Lg"
+                        Loading="_loading">
+                    Kayit Ol
+                </Button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <p class="mt-4 text-sm text-danger" role="alert">@_error</p>
+            }
+        </EditForm>
+
+        <p class="mt-8 text-sm text-slate-600 text-center">
+            Zaten hesabin var mi?
+            <a href="/login" class="text-primary font-medium hover:underline">Giris yap</a>
+        </p>
+    </Card>
+</div>
+
+@code {
+    private RegisterForm _form = new();
+    private bool _loading;
+    private string? _error;
+
+    private async Task HandleRegister()
+    {
+        _error = null;
+        _loading = true;
+        try
+        {
+            var auth = await AuthApi.RegisterAsync(new RegisterRequest(
+                _form.Email,
+                _form.Password,
+                _form.FirstName,
+                _form.LastName));
+            await JwtState.SetAuthenticatedUserAsync(auth.Token);
+            Toasts.ShowSuccess($"Hosgeldiniz, {auth.User.FirstName}.");
+            Navigation.NavigateTo("/", forceLoad: false);
+        }
+        catch (ApiException ex) when (ex.IsConflict)
+        {
+            _error = "Bu e-posta zaten kayitli.";
+        }
+        catch (ApiException ex) when (ex.IsValidation)
+        {
+            _error = ex.Detail ?? "Lutfen tum alanlari dogru doldurun.";
+        }
+        catch (ApiException ex) when (ex.IsRateLimited)
+        {
+            _error = "Cok fazla deneme. Lutfen biraz bekleyip tekrar deneyin.";
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Message;
+        }
+        catch
+        {
+            _error = "Beklenmeyen bir hata olustu.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private sealed class RegisterForm
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Ad gereklidir.")]
+        public string FirstName { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Soyad gereklidir.")]
+        public string LastName { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "E-posta gereklidir.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Gecerli bir e-posta giriniz.")]
+        public string Email { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Parola gereklidir.")]
+        [System.ComponentModel.DataAnnotations.StringLength(128, MinimumLength = 8, ErrorMessage = "Parola en az 8 karakter olmali.")]
+        public string Password { get; set; } = "";
+    }
+}

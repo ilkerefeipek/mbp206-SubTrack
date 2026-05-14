@@ -1,0 +1,35 @@
+@using ApexCharts
+
+<div class="w-full">
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <h3 class="text-sm font-semibold text-slate-700 mb-2">@Title</h3>
+    }
+    <ApexChart TItem="ChartBar" Options="_options" Width="@Width">
+        <ApexPointSeries TItem="ChartBar"
+                         Items="Data"
+                         Name="@SeriesName"
+                         SeriesType="SeriesType.Bar"
+                         XValue="@(e => e.Label)"
+                         YValue="@(e => e.Value)" />
+    </ApexChart>
+</div>
+
+@code {
+    public sealed record ChartBar(string Label, decimal Value);
+
+    [Parameter, EditorRequired] public IEnumerable<ChartBar> Data { get; set; } = Array.Empty<ChartBar>();
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string SeriesName { get; set; } = "Tutar";
+    [Parameter] public bool Horizontal { get; set; }
+    [Parameter] public string Width { get; set; } = "100%";
+
+    private ApexChartOptions<ChartBar> _options = new()
+    {
+        Colors = new List<string> { "#0F766E" },
+        PlotOptions = new PlotOptions
+        {
+            Bar = new PlotOptionsBar { BorderRadius = 6 }
+        }
+    };
+}
