@@ -1,0 +1,65 @@
+<div class="@($"rounded-lg p-4 border-l-4 {BgClass} {BorderClass}")">
+    <div class="flex items-start gap-3">
+        <span class="@($"shrink-0 w-9 h-9 rounded-lg flex items-center justify-center {AccentTextClass} bg-white shadow-sm")">
+            <Icon Name="@IconName" Class="w-5 h-5" />
+        </span>
+        <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-900">@Insight.Title</h3>
+            <p class="mt-1 text-sm text-slate-600">@Insight.Description</p>
+            @if (Insight.PotentialSavings.HasValue)
+            {
+                <p class="mt-2 text-xs font-medium text-success">Olasi tasarruf: @Formatter.FormatCurrency(Insight.PotentialSavings.Value)</p>
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(ActionLabel) && OnAction.HasDelegate)
+        {
+            <Button Variant="Button.ButtonVariant.Secondary" Size="Button.ButtonSize.Sm" OnClick="OnAction">
+                @ActionLabel
+            </Button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public InsightDto Insight { get; set; } = default!;
+    [Parameter] public EventCallback OnAction { get; set; }
+
+    private string IconName => Insight.Type switch
+    {
+        InsightType.UnusedSubscription => "alert-circle",
+        InsightType.HighSpending => "bar-chart",
+        InsightType.UpcomingRenewal => "bell",
+        InsightType.DuplicateService => "credit-card",
+        _ => "inbox"
+    };
+
+    private string ActionLabel => Insight.Type switch
+    {
+        InsightType.UnusedSubscription => "Incele",
+        InsightType.HighSpending => "Detaylar",
+        InsightType.UpcomingRenewal => "Goruntule",
+        InsightType.DuplicateService => "Karsilastir",
+        _ => ""
+    };
+
+    private string BgClass => Insight.Severity switch
+    {
+        InsightSeverity.Critical => "bg-red-50",
+        InsightSeverity.Warning => "bg-amber-50",
+        _ => "bg-blue-50"
+    };
+
+    private string BorderClass => Insight.Severity switch
+    {
+        InsightSeverity.Critical => "border-l-danger",
+        InsightSeverity.Warning => "border-l-warning",
+        _ => "border-l-primary"
+    };
+
+    private string AccentTextClass => Insight.Severity switch
+    {
+        InsightSeverity.Critical => "text-danger",
+        InsightSeverity.Warning => "text-warning",
+        _ => "text-primary"
+    };
+}

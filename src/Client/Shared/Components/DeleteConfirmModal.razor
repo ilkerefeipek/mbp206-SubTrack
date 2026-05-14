@@ -1,0 +1,28 @@
+<Modal IsOpen="IsOpen" Title="@Title" OnClose="OnCancel" CloseOnBackdrop="!Working">
+    <ChildContent>
+        <p class="text-sm text-slate-700">@Description</p>
+        @if (!string.IsNullOrEmpty(ItemName))
+        {
+            <p class="mt-3 text-sm font-medium text-slate-900">@ItemName</p>
+        }
+        @if (!string.IsNullOrEmpty(Warning))
+        {
+            <p class="mt-3 text-xs text-danger">@Warning</p>
+        }
+    </ChildContent>
+    <Footer>
+        <Button Variant="Button.ButtonVariant.Ghost" OnClick="OnCancel" Disabled="@Working">Vazgec</Button>
+        <Button Variant="Button.ButtonVariant.Danger" OnClick="OnConfirm" Loading="@Working">Sil</Button>
+    </Footer>
+</Modal>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string Title { get; set; } = "Silmeyi onayla";
+    [Parameter] public string Description { get; set; } = "Bu islemi geri alamazsiniz.";
+    [Parameter] public string? ItemName { get; set; }
+    [Parameter] public string? Warning { get; set; }
+    [Parameter] public bool Working { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}
