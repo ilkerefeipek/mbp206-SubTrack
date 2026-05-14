@@ -1,16 +1,189 @@
 @page "/subscriptions/new"
 @attribute [Authorize]
+@inject ICategoriesApi CategoriesApi
+@inject ISubscriptionsApi SubscriptionsApi
+@inject NavigationManager Navigation
+@inject IToastService Toasts
 
 <PageTitle>Yeni Abonelik — SubTrack</PageTitle>
 
-<div class="space-y-6 max-w-2xl">
+<div class="max-w-2xl space-y-6">
     <header>
         <h1 class="text-2xl font-bold text-primary-dark tracking-tight">Yeni Abonelik Ekle</h1>
-        <p class="text-sm text-slate-500 mt-1">S5'te tam form burada calisacak.</p>
+        <p class="text-sm text-slate-500 mt-1">Aboneliginizin temel bilgilerini girin; sonraki fatura tarihinden itibaren takip baslar.</p>
     </header>
+
     <Card>
-        <EmptyState IconName="credit-card"
-                    Title="Form bekleniyor"
-                    Description="Sprint S5: ad, kategori, tutar, dongusu, sonraki fatura tarihi alanlari + FluentValidation." />
+        <EditForm Model="_form" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="sm:col-span-2">
+                    <Input TValue="string" Label="Servis Adi" Required="true"
+                           Placeholder="Netflix, Spotify, Adobe..."
+                           Error="@_errors.GetValueOrDefault(nameof(_form.Name))"
+                           @bind-Value="_form.Name" />
+                </div>
+
+                <div>
+                    <Select TItem="CategoryDto" TValue="long"
+                            Label="Kategori"
+                            Options="_categories"
+                            DisplaySelector="@(c => c.Name)"
+                            ValueSelector="@(c => c.Id)"
+                            Placeholder="Kategori secin"
+                            Error="@_errors.GetValueOrDefault(nameof(_form.CategoryId))"
+                            @bind-Value="_form.CategoryId" />
+                </div>
+
+                <div>
+                    <Select TItem="BillingCycle" TValue="BillingCycle"
+                            Label="Fatura Donemi"
+                            Options="@(new[] { BillingCycle.Weekly, BillingCycle.Monthly, BillingCycle.Quarterly, BillingCycle.Yearly })"
+                            DisplaySelector="@(c => CycleLabel(c))"
+                            ValueSelector="@(c => c)"
+                            @bind-Value="_form.BillingCycle" />
+                </div>
+
+                <div>
+                    <Input TValue="decimal" Label="Tutar" Type="number" Required="true"
+                           Placeholder="199.99"
+                           Error="@_errors.GetValueOrDefault(nameof(_form.Amount))"
+                           @bind-Value="_form.Amount" />
+                </div>
+
+                <div>
+                    <Select TItem="string" TValue="string"
+                            Label="Para Birimi"
+                            Options="@(new[] { "TRY", "USD", "EUR" })"
+                            DisplaySelector="@(s => s)"
+                            ValueSelector="@(s => s)"
+                            @bind-Value="_form.Currency" />
+                </div>
+
+                <div class="sm:col-span-2">
+                    <DatePicker Label="Sonraki Fatura Tarihi"
+                                Required="true"
+                                Min="DateOnly.FromDateTime(DateTime.UtcNow)"
+                                Error="@_errors.GetValueOrDefault(nameof(_form.NextBilling))"
+                                Value="_form.NextBilling"
+                                ValueChanged="@(v => _form.NextBilling = v ?? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)))" />
+                </div>
+            </div>
+
+            <div class="mt-6 flex items-center justify-end gap-2">
+                <Button Variant="Button.ButtonVariant.Ghost"
+                        Disabled="@_loading"
+                        OnClick="@(() => Navigation.NavigateTo("/subscriptions"))">
+                    Vazgec
+                </Button>
+                <Button Type="submit"
+                        Variant="Button.ButtonVariant.Primary"
+                        Loading="_loading">
+                    Kaydet
+                </Button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_topError))
+            {
+                <p class="mt-4 text-sm text-danger" role="alert">@_topError</p>
+            }
+        </EditForm>
     </Card>
 </div>
+
+@code {
+    private IReadOnlyList<CategoryDto> _categories = Array.Empty<CategoryDto>();
+    private FormModel _form = new();
+    private Dictionary<string, string> _errors = new();
+    private string? _topError;
+    private bool _loading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _categories = await CategoriesApi.ListAsync();
+            if (_categories.Count > 0 && _form.CategoryId == 0)
+            {
+                _form.CategoryId = _categories[0].Id;
+            }
+        }
+        catch (ApiException ex)
+        {
+            _topError = $"Kategoriler yuklenemedi: {ex.Detail ?? ex.Message}";
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        _topError = null;
+        _errors.Clear();
+        _loading = true;
+
+        try
+        {
+            var request = new SubscriptionCreateRequest(
+                _form.Name.Trim(),
+                _form.CategoryId,
+                _form.Amount,
+                _form.Currency,
+                _form.BillingCycle,
+                _form.NextBilling);
+
+            var created = await SubscriptionsApi.CreateAsync(request);
+            Toasts.ShowSuccess($"{created.Name} eklendi.");
+            Navigation.NavigateTo("/subscriptions");
+        }
+        catch (ApiException ex) when (ex.IsValidation && ex.Errors is not null)
+        {
+            foreach (var kv in ex.Errors)
+            {
+                _errors[kv.Key] = string.Join(" ", kv.Value);
+            }
+            _topError = "Lutfen formu kontrol edin.";
+        }
+        catch (ApiException ex) when (ex.IsNotFound)
+        {
+            _errors[nameof(_form.CategoryId)] = "Secilen kategori artik gecerli degil.";
+        }
+        catch (ApiException ex)
+        {
+            _topError = ex.Detail ?? ex.Message;
+        }
+        catch
+        {
+            _topError = "Beklenmeyen bir hata olustu.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string CycleLabel(BillingCycle c) => c switch
+    {
+        BillingCycle.Weekly => "Haftalik",
+        BillingCycle.Monthly => "Aylik",
+        BillingCycle.Quarterly => "3 Aylik",
+        BillingCycle.Yearly => "Yillik",
+        _ => c.ToString()
+    };
+
+    private sealed class FormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Servis adi gereklidir.")]
+        [System.ComponentModel.DataAnnotations.MaxLength(120)]
+        public string Name { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Range(1, long.MaxValue, ErrorMessage = "Kategori secimi gereklidir.")]
+        public long CategoryId { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Range(0.0, double.MaxValue, ErrorMessage = "Tutar negatif olamaz.")]
+        public decimal Amount { get; set; }
+
+        public string Currency { get; set; } = "TRY";
+        public BillingCycle BillingCycle { get; set; } = BillingCycle.Monthly;
+        public DateOnly NextBilling { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30));
+    }
+}

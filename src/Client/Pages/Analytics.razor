@@ -1,16 +1,193 @@
 @page "/analytics"
 @attribute [Authorize]
+@inject IAnalyticsApi AnalyticsApi
 
 <PageTitle>Analiz — SubTrack</PageTitle>
 
-<div class="space-y-6">
-    <header>
-        <h1 class="text-2xl font-bold text-primary-dark tracking-tight">Analiz</h1>
-        <p class="text-sm text-slate-500 mt-1">12 aylik trend, kategori dagilimi ve kullanilmayan abonelikler — S5'te.</p>
+<div class="space-y-8">
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-primary-dark tracking-tight">Analiz</h1>
+            <p class="text-sm text-slate-500 mt-1">Aylik trend, kategori dagilimi ve akilli oneriler.</p>
+        </div>
+        <div class="w-full sm:w-56">
+            <Select TItem="MonthOption" TValue="int"
+                    Options="_monthOptions"
+                    DisplaySelector="@(m => m.Label)"
+                    ValueSelector="@(m => m.Months)"
+                    Value="_selectedMonths"
+                    ValueChanged="OnMonthsChangedAsync" />
+        </div>
     </header>
-    <Card>
-        <EmptyState IconName="bar-chart"
-                    Title="Grafikler bekleniyor"
-                    Description="Sprint S5: aylik trend cizgi grafigi, kategori pasta dilimi, kullanilmayan abonelik listesi + insight'lar." />
-    </Card>
+
+    @if (_loadError is not null)
+    {
+        <Card>
+            <ErrorState Title="Analiz verileri yuklenemedi" Description="@_loadError" OnRetry="LoadAsync" />
+        </Card>
+    }
+    else
+    {
+        <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            @if (_loading || _summary is null)
+            {
+                @for (var i = 0; i < 3; i++)
+                {
+                    <Skeleton Width="100%" Height="120px" Variant="Skeleton.Shape.Box" />
+                }
+            }
+            else
+            {
+                <KpiCard Label="Aylik Toplam" Value="@Formatter.FormatCurrency(_summary.MonthlyTotal, _summary.Currency)"
+                         IconName="bar-chart" AccentColor="KpiCard.Accent.Primary" />
+                <KpiCard Label="Aktif Abonelik" Value="@_summary.ActiveCount.ToString()"
+                         IconName="credit-card" AccentColor="KpiCard.Accent.Success" />
+                <KpiCard Label="Kullanilmiyor" Value="@_summary.UnusedCount.ToString()"
+                         IconName="alert-circle" AccentColor="KpiCard.Accent.Danger" />
+            }
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <Card>
+                <h2 class="text-base font-semibold text-slate-900 mb-4">@MonthsLabel Trend</h2>
+                @if (_loading)
+                {
+                    <Skeleton Width="100%" Height="320px" Variant="Skeleton.Shape.Box" />
+                }
+                else if (_trend is not null && _trend.Count > 0 && _trend.Any(t => t.Amount > 0))
+                {
+                    <LineChart Data="@(_trend.Select(t => new LineChart.ChartPoint($"{t.Year}-{t.Month:D2}", t.Amount)))" />
+                }
+                else
+                {
+                    <EmptyState Title="Trend verisi yok" Description="Bu donemde odeme kaydi bulunmuyor." />
+                }
+            </Card>
+
+            <Card>
+                <h2 class="text-base font-semibold text-slate-900 mb-4">Kategori Dagilimi</h2>
+                @if (_loading)
+                {
+                    <Skeleton Width="100%" Height="320px" Variant="Skeleton.Shape.Box" />
+                }
+                else if (_breakdown is not null && _breakdown.Count > 0)
+                {
+                    <PieChart Donut="true"
+                              Data="@(_breakdown.Select(b => new PieChart.ChartSlice(b.CategoryName, b.MonthlyAmount)))" />
+                    <ul class="mt-4 divide-y divide-slate-100 text-sm">
+                        @foreach (var item in _breakdown)
+                        {
+                            <li class="py-2 flex items-center justify-between gap-2">
+                                <span class="text-slate-700">@item.CategoryName <span class="text-slate-400">· @item.SubscriptionCount adet</span></span>
+                                <span class="font-medium text-slate-900">@Formatter.FormatCurrency(item.MonthlyAmount) <span class="text-slate-400 ml-2">%@item.Percentage</span></span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <EmptyState Title="Veri yok" Description="Aktif abonelik bulunmadigi icin dagilim hesaplanamiyor." />
+                }
+            </Card>
+        </section>
+
+        <section>
+            <h2 class="text-base font-semibold text-slate-900 mb-3">Akilli Oneriler</h2>
+            @if (_loading)
+            {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    @for (var i = 0; i < 2; i++)
+                    {
+                        <Skeleton Width="100%" Height="100px" Variant="Skeleton.Shape.Box" />
+                    }
+                </div>
+            }
+            else if (_insights is not null && _insights.Count > 0)
+            {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    @foreach (var insight in _insights.OrderByDescending(i => i.Severity))
+                    {
+                        <InsightCard Insight="insight" />
+                    }
+                </div>
+            }
+            else
+            {
+                <Card>
+                    <EmptyState IconName="bar-chart"
+                                Title="Aboneliklerin yolunda"
+                                Description="Su an dikkat cekecek bir abonelik onerisi yok. Tebrikler!" />
+                </Card>
+            }
+        </section>
+    }
 </div>
+
+@code {
+    private DashboardSummaryDto? _summary;
+    private IReadOnlyList<CategoryBreakdownItemDto>? _breakdown;
+    private IReadOnlyList<MonthlyTrendItemDto>? _trend;
+    private IReadOnlyList<InsightDto>? _insights;
+    private bool _loading = true;
+    private string? _loadError;
+    private int _selectedMonths = 12;
+
+    private readonly List<MonthOption> _monthOptions = new()
+    {
+        new(3, "Son 3 Ay"),
+        new(6, "Son 6 Ay"),
+        new(12, "Son 12 Ay"),
+        new(24, "Son 24 Ay")
+    };
+
+    private string MonthsLabel => _monthOptions.FirstOrDefault(m => m.Months == _selectedMonths)?.Label ?? "Trend";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task OnMonthsChangedAsync(int months)
+    {
+        _selectedMonths = months;
+        try
+        {
+            _trend = await AnalyticsApi.GetTrendAsync(_selectedMonths);
+        }
+        catch (ApiException ex)
+        {
+            _loadError = ex.Detail ?? ex.Message;
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _loadError = null;
+        try
+        {
+            var summary = AnalyticsApi.GetSummaryAsync();
+            var breakdown = AnalyticsApi.GetBreakdownAsync();
+            var trend = AnalyticsApi.GetTrendAsync(_selectedMonths);
+            var insights = AnalyticsApi.GetInsightsAsync();
+
+            await Task.WhenAll(summary, breakdown, trend, insights);
+
+            _summary = await summary;
+            _breakdown = await breakdown;
+            _trend = await trend;
+            _insights = await insights;
+        }
+        catch (ApiException ex)
+        {
+            _loadError = ex.Detail ?? ex.Message;
+        }
+        catch
+        {
+            _loadError = "Beklenmeyen bir hata olustu.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private sealed record MonthOption(int Months, string Label);
+}

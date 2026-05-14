@@ -1,16 +1,145 @@
 @page "/notifications"
 @attribute [Authorize]
+@inject INotificationsApi NotificationsApi
+@inject IToastService Toasts
 
 <PageTitle>Bildirimler — SubTrack</PageTitle>
 
 <div class="space-y-6">
     <header>
         <h1 class="text-2xl font-bold text-primary-dark tracking-tight">Bildirimler</h1>
-        <p class="text-sm text-slate-500 mt-1">S5/S6: gercek bildirim listesi + okundu isaretle.</p>
+        <p class="text-sm text-slate-500 mt-1">Yenileme hatirlatmalari ve kullanilmayan abonelik uyarilari.</p>
     </header>
-    <Card>
-        <EmptyState IconName="bell"
-                    Title="Bildirim listesi bekleniyor"
-                    Description="Sprint S5: okunmamis bildirim badge + okundu/silindi aksiyonlari." />
-    </Card>
+
+    <div class="flex items-center gap-2">
+        <button class="@TabClass(false)" @onclick="@(() => SwitchTab(false))">Tumu</button>
+        <button class="@TabClass(true)" @onclick="@(() => SwitchTab(true))">Okunmamis @(_unreadCount > 0 ? $"({_unreadCount})" : "")</button>
+    </div>
+
+    @if (_loading)
+    {
+        <Card>
+            <div class="space-y-3">
+                @for (var i = 0; i < 3; i++)
+                {
+                    <Skeleton Width="100%" Height="56px" Variant="Skeleton.Shape.Box" />
+                }
+            </div>
+        </Card>
+    }
+    else if (_loadError is not null)
+    {
+        <Card>
+            <ErrorState Title="Bildirimler yuklenemedi" Description="@_loadError" OnRetry="LoadAsync" />
+        </Card>
+    }
+    else if (_displayed.Count == 0)
+    {
+        <Card>
+            <EmptyState IconName="bell"
+                        Title="@(_showUnread ? "Okunmamis bildirimin yok" : "Henuz bildirim yok")"
+                        Description="Yeni yenileme veya kullanim uyarisi geldiginde burada gorunecek." />
+        </Card>
+    }
+    else
+    {
+        <ul class="space-y-2">
+            @foreach (var n in _displayed)
+            {
+                <li class="@($"rounded-lg border p-4 flex items-start gap-3 transition {(n.IsRead ? "bg-white border-slate-200" : "bg-primary-light/30 border-primary/20")}")">
+                    <span class="@($"shrink-0 w-9 h-9 rounded-lg flex items-center justify-center {IconBgClass(n.Type)}")">
+                        <Icon Name="@IconName(n.Type)" Class="w-5 h-5" />
+                    </span>
+                    <div class="flex-1 min-w-0">
+                        <p class="@(n.IsRead ? "text-sm text-slate-700" : "text-sm font-semibold text-slate-900")">@n.Message</p>
+                        <p class="text-xs text-slate-500 mt-1">@Formatter.FormatTimeAgo(n.SentAt)</p>
+                    </div>
+                    @if (!n.IsRead)
+                    {
+                        <Button Variant="Button.ButtonVariant.Ghost" Size="Button.ButtonSize.Sm"
+                                OnClick="@(() => MarkReadAsync(n))">
+                            Okundu
+                        </Button>
+                    }
+                </li>
+            }
+        </ul>
+    }
 </div>
+
+@code {
+    private IReadOnlyList<NotificationDto> _all = Array.Empty<NotificationDto>();
+    private bool _showUnread;
+    private bool _loading = true;
+    private string? _loadError;
+
+    private IReadOnlyList<NotificationDto> _displayed => _showUnread
+        ? _all.Where(n => !n.IsRead).ToList()
+        : _all;
+
+    private int _unreadCount => _all.Count(n => !n.IsRead);
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _loadError = null;
+        try
+        {
+            _all = await NotificationsApi.ListAsync();
+        }
+        catch (ApiException ex)
+        {
+            _loadError = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SwitchTab(bool unread)
+    {
+        _showUnread = unread;
+        await Task.CompletedTask;
+    }
+
+    private async Task MarkReadAsync(NotificationDto n)
+    {
+        try
+        {
+            await NotificationsApi.MarkReadAsync(n.Id);
+            await LoadAsync();
+            Toasts.ShowInfo("Bildirim okundu olarak isaretlendi.");
+        }
+        catch (ApiException ex)
+        {
+            Toasts.ShowError(ex.Detail ?? ex.Message);
+        }
+    }
+
+    private string TabClass(bool unread)
+    {
+        var active = _showUnread == unread;
+        return active
+            ? "px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-white"
+            : "px-4 py-2 text-sm font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+    }
+
+    private static string IconName(NotificationType t) => t switch
+    {
+        NotificationType.RenewalReminder => "bell",
+        NotificationType.UnusedAlert => "alert-circle",
+        NotificationType.Welcome => "user",
+        _ => "inbox"
+    };
+
+    private static string IconBgClass(NotificationType t) => t switch
+    {
+        NotificationType.RenewalReminder => "bg-blue-100 text-primary",
+        NotificationType.UnusedAlert => "bg-red-100 text-danger",
+        NotificationType.Welcome => "bg-green-100 text-success",
+        _ => "bg-slate-100 text-slate-500"
+    };
+}
