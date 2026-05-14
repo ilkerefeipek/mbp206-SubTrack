@@ -42,12 +42,27 @@ public class HomePageSmokeTests
 
     public HomePageSmokeTests(PlaywrightFixture fixture) => _fixture = fixture;
 
-    [Fact(Skip = "Activated in Sprint S5 (E2E) when Blazor UI is complete")]
+    private static string BaseUrl =>
+        Environment.GetEnvironmentVariable("E2E_BASE_URL") ?? "http://localhost:5277";
+
+    [Fact]
     public async Task Home_Page_Renders_SubTrack_Heading()
     {
-        var page = await _fixture.Browser!.NewPageAsync();
-        await page.GotoAsync("http://localhost:5173");
-        var heading = await page.Locator("h1").TextContentAsync();
-        Assert.Contains("SubTrack", heading);
+        var context = await _fixture.Browser!.NewContextAsync(new BrowserNewContextOptions
+        {
+            IgnoreHTTPSErrors = true
+        });
+        var page = await context.NewPageAsync();
+        try
+        {
+            // Unauthenticated user landing on / will be redirected to /login by AuthorizeView.
+            await page.GotoAsync($"{BaseUrl}/login");
+            var heading = page.Locator("h1:has-text(\"SubTrack\")").First;
+            await Assertions.Expect(heading).ToBeVisibleAsync(new() { Timeout = 10000 });
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
     }
 }
