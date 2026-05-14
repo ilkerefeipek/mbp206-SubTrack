@@ -1,8 +1,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using SubTrack.Infrastructure;
 using SubTrack.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,12 +20,16 @@ builder.Services.AddSwaggerGen(o =>
     o.SwaggerDoc("v1", new() { Title = "SubTrack API", Version = "v1" });
 });
 
-// --- EF Core / SQL Server ---
-// In Testing environment the integration test fixture replaces this with an in-memory provider.
-if (!builder.Environment.IsEnvironment("Testing"))
+// --- EF Core / SQL Server + Repository pattern + UoW ---
+// In Testing environment the integration test fixture supplies an in-memory DbContext
+// and we only register repositories + UoW here.
+if (builder.Environment.IsEnvironment("Testing"))
 {
-    builder.Services.AddDbContext<AppDbContext>(opt =>
-        opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    builder.Services.AddInfrastructureRepositories();
+}
+else
+{
+    builder.Services.AddInfrastructure(builder.Configuration);
 }
 
 // --- JWT Authentication ---

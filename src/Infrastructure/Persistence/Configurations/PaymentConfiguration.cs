@@ -22,6 +22,10 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .HasForeignKey(p => p.SubscriptionId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(p => new { p.SubscriptionId, p.PaymentDate });
+        // S1 — covering index: queries "payments for subscription, latest first, sum amount"
+        builder.HasIndex(p => new { p.SubscriptionId, p.PaymentDate })
+            .IsDescending(false, true)
+            .IncludeProperties(p => p.Amount)
+            .HasDatabaseName("IX_Payments_Sub_Date_Amount");
     }
 }

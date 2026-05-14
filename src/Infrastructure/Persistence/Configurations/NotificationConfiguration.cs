@@ -27,6 +27,9 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
             .HasForeignKey(n => n.SubscriptionId)
             .OnDelete(DeleteBehavior.ClientSetNull);
 
-        builder.HasIndex(n => new { n.UserId, n.IsRead });
+        // S1 — filtered index: only unread notifications (smaller, faster for the common query)
+        builder.HasIndex(n => new { n.UserId, n.IsRead })
+            .HasFilter("[IsRead] = 0")
+            .HasDatabaseName("IX_Notifications_Unread");
     }
 }

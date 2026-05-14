@@ -32,5 +32,10 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
 
         builder.HasIndex(s => s.NextBilling);
         builder.HasIndex(s => s.LastUsedDate);
+
+        // S1 — filtered index for the hot path: "active subscriptions billing soon"
+        builder.HasIndex(s => s.NextBilling)
+            .HasFilter("[Status] = 'Active'")
+            .HasDatabaseName("IX_Subscriptions_Active_NextBilling");
     }
 }
