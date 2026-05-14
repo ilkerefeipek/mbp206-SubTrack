@@ -243,7 +243,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // TC-06 Liste — Arama (debouncer) ile filtreleme
+    // TC-06 Liste — Filtreleme (arama + kategori dropdown)
     // ─────────────────────────────────────────────────────────────────
     [Fact]
     public async Task TC06_SubscriptionsList_FilterByCategory_ShowsOnlyMatching()
@@ -255,14 +255,23 @@ public class PlaywrightE2ETests : IAsyncLifetime
         await Expect(_page.Locator("text=\"Netflix Premium\"").First).ToBeVisibleAsync(new() { Timeout = 10000 });
         await Expect(_page.Locator("text=\"Spotify Premium\"").First).ToBeVisibleAsync();
 
-        // Search input ile "Spotify" ara — debouncer 300ms sonra API'ye refetch tetikler.
-        // TopBar global aramayla cakismamasi icin sayfanin kendi placeholder'iyla hedefliyoruz.
+        // 1) Search input ile filtre (debouncer 300ms sonra API'ye refetch tetikler)
         await _page.GetByPlaceholder("Abonelik adina gore ara...").FillAsync("Spotify");
 
-        // Filter sonucu: Spotify gorunur, diger aboneliklerin (Netflix, Disney+, Adobe) hicbiri gozukmemeli
         await Expect(_page.Locator("text=\"Spotify Premium\"").First).ToBeVisibleAsync(new() { Timeout = 10000 });
         await Expect(_page.Locator("text=\"Netflix Premium\"")).ToHaveCountAsync(0);
         await Expect(_page.Locator("text=\"Disney+\"")).ToHaveCountAsync(0);
+        await Expect(_page.Locator("text=\"Adobe Creative Cloud\"")).ToHaveCountAsync(0);
+
+        // 2) Search'i temizle ve kategori dropdown ile filtre (S6 fix: bind-Value:after LoadAsync)
+        await _page.GetByPlaceholder("Abonelik adina gore ara...").FillAsync("");
+        // Sayfada tek <select> kategori dropdown'u — "Streaming" sec
+        await _page.Locator("select").First.SelectOptionAsync(new SelectOptionValue { Label = "Streaming" });
+
+        // Streaming: Netflix + Disney+ + YouTube Premium gorunur; Spotify (Muzik) ve Adobe (Verimlilik) yok
+        await Expect(_page.Locator("text=\"Netflix Premium\"").First).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Expect(_page.Locator("text=\"Disney+\"").First).ToBeVisibleAsync();
+        await Expect(_page.Locator("text=\"Spotify Premium\"")).ToHaveCountAsync(0);
         await Expect(_page.Locator("text=\"Adobe Creative Cloud\"")).ToHaveCountAsync(0);
 
         await ScreenshotAsync("TC-06");
@@ -313,7 +322,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // TC-08 Dashboard — KPI hesaplama (para birimi gosterimi)
+    // TC-08 Dashboard — KPI hesaplama (BillingMath dogru toplam)
     // ─────────────────────────────────────────────────────────────────
     [Fact]
     public async Task TC08_Dashboard_MonthlyTotal_CalculatedCorrectly()
@@ -327,9 +336,30 @@ public class PlaywrightE2ETests : IAsyncLifetime
         await Expect(_page.GetByText("Yakinda Yenilenecek").First).ToBeVisibleAsync();
         await Expect(_page.GetByText("Kullanilmiyor").First).ToBeVisibleAsync();
 
-        // Sayfada formatli para birimi (tr-TR: virgul ondalik, "TL" suffix) — Aylik Toplam KpiCard'i icin
-        var trCurrency = _page.Locator("text=/[\\d.,]+\\s*TL/").First;
-        await Expect(trCurrency).ToBeVisibleAsync();
+        // Seed verisi (DataSeeder): 7 abonelik, hepsi Active.
+        //   Netflix 229.99/ay TRY + Spotify 59.99/ay TRY + Disney+ 149.99/ay TRY
+        //   + YouTube 79.99/ay TRY + Adobe 1199/yil TRY (=99.92/ay) + Notion 12/ay USD + GitHub 4/ay USD
+        // AnalyticsService.GetSummaryAsync tum currency'leri toplayip TRY etiketi ile doner
+        // (multi-currency aritmetigi WON'T - CLAUDE.md Bolum 16 acik konu).
+        // Baseline ilk kosum: 619.88 (TRY) + 16 (USD direk) = 635.88 TL
+        // TC-04 her kosumda demo user'a +49.99 TRY abonelik ekler (deterministik degil).
+        // Strict ama esnek: rakam tr-TR format + non-zero + minimum 600 TL.
+        var aylikToplamLabel = _page.Locator("text=\"Aylik Toplam\"").First;
+        await Expect(aylikToplamLabel).ToBeVisibleAsync();
+        var kpiCard = aylikToplamLabel.Locator("xpath=ancestor::div[contains(@class,'rounded-xl')]").First;
+        var amountEl = kpiCard.Locator(".text-3xl").First;
+        await Expect(amountEl).ToBeVisibleAsync();
+        var amountText = (await amountEl.TextContentAsync())?.Trim() ?? string.Empty;
+
+        // 1) tr-TR para formati (binlik nokta opsiyonel + virgul ondalik + TL suffix)
+        amountText.Should().MatchRegex(@"^\d{1,3}(\.\d{3})*,\d{2}\s*TL$",
+            because: "Aylik Toplam tr-TR culture'da 'X.XXX,YY TL' veya 'XXX,YY TL' formatinda olmali");
+
+        // 2) Rakam 0 degil (false-green'i giderme: BillingMath gercekten calisip 0+ deger uretiyor mu)
+        var digits = new string(amountText.Where(char.IsDigit).ToArray());
+        long.TryParse(digits, out var amountAsLong);
+        amountAsLong.Should().BeGreaterThan(60000, // minimum 600.00 TL = 60000 ondalik-yok
+            because: "seed verisinin BillingMath toplami minimum 600 TL etmeli (Netflix+Spotify+Disney+ tek basina 440 TL)");
 
         await ScreenshotAsync("TC-08");
     }

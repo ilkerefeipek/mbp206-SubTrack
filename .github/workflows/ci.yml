@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: windows-latest
+    runs-on: windows-latest  # LocalDB icin zorunlu
 
     steps:
       - name: Checkout
@@ -18,6 +18,14 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
       - name: Restore tools
         run: dotnet tool restore
@@ -31,8 +39,68 @@ jobs:
       - name: Build (warnings as errors)
         run: dotnet build --no-restore --configuration Release /p:TreatWarningsAsErrors=true
 
-      - name: Run tests
-        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+      - name: Setup LocalDB
+        shell: pwsh
+        run: |
+          sqllocaldb create "MSSQLLocalDB" -s
+          sqllocaldb info
+
+      - name: User secrets (test JWT key)
+        shell: pwsh
+        run: |
+          cd src/Api
+          dotnet user-secrets set "Jwt:Key" "ci-jwt-key-not-for-production-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+      - name: Database migration
+        run: dotnet ef database update --project src/Infrastructure --startup-project src/Api
+
+      - name: Install Playwright browsers
+        shell: pwsh
+        run: |
+          $playwrightScript = Get-ChildItem -Path tests -Recurse -Filter "playwright.ps1" | Select-Object -First 1
+          if (-not $playwrightScript) { throw "playwright.ps1 not found - did build run?" }
+          & $playwrightScript.FullName install chromium --with-deps
+
+      - name: Unit + Integration tests
+        run: dotnet test --no-build --configuration Release --filter "FullyQualifiedName!~E2E&FullyQualifiedName!~HomePageSmoke" --logger "trx;LogFileName=unit-results.trx" --collect:"XPlat Code Coverage"
+
+      - name: Start API (background)
+        shell: pwsh
+        run: |
+          $proc = Start-Process dotnet -ArgumentList "run --project src/Api --configuration Release --no-build --urls http://localhost:5000" -PassThru -RedirectStandardOutput api-stdout.log -RedirectStandardError api-stderr.log
+          $proc.Id | Out-File -FilePath api.pid
+          $deadline = (Get-Date).AddSeconds(60)
+          while ((Get-Date) -lt $deadline) {
+            if ((Test-Path api-stdout.log) -and (Select-String -Path api-stdout.log -Pattern "Now listening on" -Quiet)) { break }
+            Start-Sleep -Seconds 2
+          }
+
+      - name: Start Client (background)
+        shell: pwsh
+        run: |
+          $proc = Start-Process dotnet -ArgumentList "run --project src/Client --configuration Release --no-build --urls http://localhost:5277" -PassThru -RedirectStandardOutput client-stdout.log -RedirectStandardError client-stderr.log
+          $proc.Id | Out-File -FilePath client.pid
+          $deadline = (Get-Date).AddSeconds(60)
+          while ((Get-Date) -lt $deadline) {
+            if ((Test-Path client-stdout.log) -and (Select-String -Path client-stdout.log -Pattern "Now listening on" -Quiet)) { break }
+            Start-Sleep -Seconds 2
+          }
+
+      - name: E2E tests (Playwright TC-01..TC-10 + smoke)
+        env:
+          E2E_BASE_URL: http://localhost:5277
+        run: dotnet test --no-build --configuration Release --filter "FullyQualifiedName~E2E|FullyQualifiedName~HomePageSmoke" --logger "trx;LogFileName=e2e-results.trx"
+
+      - name: Stop background processes
+        if: always()
+        shell: pwsh
+        run: |
+          foreach ($pidFile in @("api.pid", "client.pid")) {
+            if (Test-Path $pidFile) {
+              $procId = Get-Content $pidFile
+              try { Stop-Process -Id $procId -Force -ErrorAction Stop } catch {}
+            }
+          }
 
       - name: Upload test results
         if: always()
@@ -48,6 +116,13 @@ jobs:
           name: coverage
           path: '**/TestResults/**/coverage.cobertura.xml'
 
-      - name: Validate EF migrations bundle
-        run: dotnet ef migrations bundle --project src/Infrastructure --startup-project src/Api --self-contained --runtime win-x64 --output ./efbundle.exe --force
-        continue-on-error: true
+      - name: Upload server logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-logs
+          path: |
+            api-stdout.log
+            api-stderr.log
+            client-stdout.log
+            client-stderr.log

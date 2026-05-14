@@ -169,6 +169,7 @@ if (args.Contains("--seed"))
 
 // --- Pipeline ---
 app.UseExceptionHandler();
+app.UseMiddleware<SubTrack.Api.Middleware.SecurityHeadersMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

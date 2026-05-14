@@ -42,7 +42,8 @@
                         DisplaySelector="@(c => c.Name)"
                         ValueSelector="@(c => c.Id)"
                         Placeholder="Tum kategoriler"
-                        @bind-Value="_selectedCategoryId" />
+                        @bind-Value="_selectedCategoryId"
+                        @bind-Value:after="LoadAsync" />
             </div>
         </div>
     </Card>
@@ -232,12 +233,6 @@
         {
             await InvokeAsync(LoadAsync);
         });
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        // Re-load when category dropdown bound value changes (Select fires ValueChanged).
-        await Task.CompletedTask;
     }
 
     private async Task MarkUsedAsync(SubscriptionListItemDto sub)

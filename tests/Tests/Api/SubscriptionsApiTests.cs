@@ -248,4 +248,65 @@ public class SubscriptionsApiTests : IClassFixture<SubTrackWebAppFactory>
         var reloaded = await client.GetFromJsonAsync<SubscriptionDto>($"/api/subscriptions/{sub.Id}");
         reloaded!.LastUsedDate.Should().Be(DateOnly.FromDateTime(DateTime.UtcNow));
     }
+
+    [Fact]
+    public async Task GetUpcoming_AuthenticatedUser_Returns200WithFilteredWithinWindow()
+    {
+        var client = await AuthenticatedClientAsync();
+        var categoryId = await FirstCategoryIdAsync();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        // 3 abonelik: 3 gun, 20 gun, 60 gun sonra
+        async Task<SubscriptionDto> Create(string name, int daysAhead, decimal amount = 50m)
+        {
+            var body = new
+            {
+                Name = name,
+                CategoryId = categoryId,
+                Amount = amount,
+                Currency = "TRY",
+                BillingCycle = BillingCycle.Monthly,
+                NextBilling = today.AddDays(daysAhead).ToString("yyyy-MM-dd")
+            };
+            var resp = await client.PostAsJsonAsync("/api/subscriptions", body);
+            return (await resp.Content.ReadFromJsonAsync<SubscriptionDto>())!;
+        }
+
+        await Create("Yakin Abonelik", 3);
+        await Create("Orta Abonelik", 20);
+        await Create("Uzak Abonelik", 60);
+
+        // daysAhead=7 -> sadece 3 gun sonraki gelmeli
+        var response = await client.GetAsync("/api/subscriptions/upcoming?daysAhead=7");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var list = (await response.Content.ReadFromJsonAsync<List<SubscriptionListItemDto>>())!;
+        list.Should().Contain(s => s.Name == "Yakin Abonelik");
+        list.Should().NotContain(s => s.Name == "Orta Abonelik");
+        list.Should().NotContain(s => s.Name == "Uzak Abonelik");
+    }
+
+    [Fact]
+    public async Task GetUpcoming_DefaultDaysAhead_Returns7DayWindow()
+    {
+        var client = await AuthenticatedClientAsync();
+        var categoryId = await FirstCategoryIdAsync();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var bodyToday = new
+        {
+            Name = "Bugun Yenilenen",
+            CategoryId = categoryId,
+            Amount = 99m,
+            Currency = "TRY",
+            BillingCycle = BillingCycle.Monthly,
+            NextBilling = today.ToString("yyyy-MM-dd")
+        };
+        await client.PostAsJsonAsync("/api/subscriptions", bodyToday);
+
+        // Query string olmadan default daysAhead=7 olmali
+        var response = await client.GetAsync("/api/subscriptions/upcoming");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var list = (await response.Content.ReadFromJsonAsync<List<SubscriptionListItemDto>>())!;
+        list.Should().Contain(s => s.Name == "Bugun Yenilenen");
+    }
 }

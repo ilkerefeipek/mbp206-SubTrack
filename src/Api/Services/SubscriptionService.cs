@@ -125,6 +125,23 @@ public sealed class SubscriptionService(
         await uow.SaveChangesAsync(ct);
     }
 
+    public async Task<IReadOnlyList<SubscriptionListItemDto>> GetUpcomingAsync(
+        int daysAhead,
+        CancellationToken ct = default)
+    {
+        var userId = RequireUserId();
+        var clamped = daysAhead < 1 ? 7 : (daysAhead > 90 ? 90 : daysAhead);
+
+        var upcoming = await uow.Subscriptions.GetUpcomingBillingAsync(userId, clamped, ct);
+        var categories = (await uow.Categories.ListAsync(ct)).ToDictionary(c => c.Id);
+
+        return upcoming
+            .Where(s => s.Status == SubscriptionStatus.Active)
+            .Select(s => s.ToListItemDto(
+                categories.TryGetValue(s.CategoryId, out var c) ? c.Name : string.Empty))
+            .ToList();
+    }
+
     private long RequireUserId() =>
         currentUser.UserId ?? throw new UnauthorizedException();
 

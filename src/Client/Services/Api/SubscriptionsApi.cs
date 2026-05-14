@@ -11,6 +11,7 @@ public interface ISubscriptionsApi
     Task<SubscriptionDto> UpdateAsync(long id, SubscriptionUpdateRequest request, CancellationToken ct = default);
     Task DeleteAsync(long id, CancellationToken ct = default);
     Task MarkAsUsedAsync(long id, CancellationToken ct = default);
+    Task<IReadOnlyList<SubscriptionListItemDto>> GetUpcomingAsync(int daysAhead = 7, CancellationToken ct = default);
 }
 
 public sealed class SubscriptionsApi(HttpClient http) : ApiClientBase(http), ISubscriptionsApi
@@ -40,6 +41,12 @@ public sealed class SubscriptionsApi(HttpClient http) : ApiClientBase(http), ISu
 
     public Task MarkAsUsedAsync(long id, CancellationToken ct = default) =>
         PostAsync($"/api/subscriptions/{id}/mark-used", body: null, ct);
+
+    public async Task<IReadOnlyList<SubscriptionListItemDto>> GetUpcomingAsync(
+        int daysAhead = 7,
+        CancellationToken ct = default) =>
+        await GetAsync<List<SubscriptionListItemDto>>(
+            $"/api/subscriptions/upcoming?daysAhead={daysAhead}", ct);
 
     private static string BuildQueryString(SubscriptionFilters? f)
     {

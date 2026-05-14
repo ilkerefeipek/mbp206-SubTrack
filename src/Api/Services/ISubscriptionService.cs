@@ -10,4 +10,5 @@ public interface ISubscriptionService
     Task<SubscriptionDto> UpdateAsync(long id, SubscriptionUpdateRequest request, CancellationToken ct = default);
     Task DeleteAsync(long id, CancellationToken ct = default);
     Task MarkAsUsedAsync(long id, CancellationToken ct = default);
+    Task<IReadOnlyList<SubscriptionListItemDto>> GetUpcomingAsync(int daysAhead, CancellationToken ct = default);
 }

@@ -139,24 +139,17 @@
             var summaryTask = AnalyticsApi.GetSummaryAsync();
             var breakdownTask = AnalyticsApi.GetBreakdownAsync();
             var trendTask = AnalyticsApi.GetTrendAsync(6);
-            var subsTask = SubscriptionsApi.ListAsync(new SubscriptionFilters
-            {
-                Status = SubscriptionStatus.Active
-            });
+            // S6: server-side filtering via /api/subscriptions/upcoming (S5'te client-side fallback vardi)
+            var upcomingTask = SubscriptionsApi.GetUpcomingAsync(daysAhead: 30);
 
-            await Task.WhenAll(summaryTask, breakdownTask, trendTask, subsTask);
+            await Task.WhenAll(summaryTask, breakdownTask, trendTask, upcomingTask);
 
             _summary = await summaryTask;
             _breakdown = await breakdownTask;
             _trend = await trendTask;
 
-            var allSubs = await subsTask;
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            _upcoming = allSubs
-                .Where(s => s.NextBilling >= today)
-                .OrderBy(s => s.NextBilling)
-                .Take(5)
-                .ToList();
+            var upcoming = await upcomingTask;
+            _upcoming = upcoming.Take(5).ToList();
         }
         catch (ApiException ex)
         {

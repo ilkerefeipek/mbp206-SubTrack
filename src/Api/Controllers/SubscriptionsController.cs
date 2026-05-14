@@ -49,4 +49,10 @@ public sealed class SubscriptionsController(ISubscriptionService subscriptionSer
         await subscriptionService.MarkAsUsedAsync(id, ct);
         return NoContent();
     }
+
+    [HttpGet("upcoming")]
+    public async Task<ActionResult<IReadOnlyList<SubscriptionListItemDto>>> GetUpcoming(
+        [FromQuery] int daysAhead = 7,
+        CancellationToken ct = default) =>
+        Ok(await subscriptionService.GetUpcomingAsync(daysAhead, ct));
 }
