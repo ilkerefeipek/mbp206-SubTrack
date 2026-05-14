@@ -57,6 +57,15 @@ builder.Services.AddSingleton<ITokenBlacklist, InMemoryTokenBlacklist>();
 builder.Services.AddHostedService<TokenBlacklistCleanupService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// --- Domain services (S3) ---
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddSingleton<SubTrack.Api.Services.Email.IEmailSender, SubTrack.Api.Services.Email.NullEmailSender>();
+
 // --- JWT bearer authentication ---
 var jwtConfig = builder.Configuration.GetSection(JwtOptions.SectionName);
 var jwtKey = jwtConfig["Key"]
