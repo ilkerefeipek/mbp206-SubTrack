@@ -8,17 +8,17 @@ public sealed class PaymentCreateRequestValidator : AbstractValidator<PaymentCre
     public PaymentCreateRequestValidator()
     {
         RuleFor(x => x.Amount)
-            .GreaterThan(0).WithMessage("Tutar 0'dan buyuk olmali.")
+            .GreaterThan(0).WithMessage("Tutar 0'dan büyük olmalı.")
             .PrecisionScale(10, 2, ignoreTrailingZeros: true);
 
         RuleFor(x => x.Method)
-            .NotEmpty().WithMessage("Odeme yontemi gereklidir.")
+            .NotEmpty().WithMessage("Ödeme yöntemi gereklidir.")
             .MaximumLength(50);
 
         RuleFor(x => x.PaymentDate)
-            .NotEqual(default(DateOnly)).WithMessage("Odeme tarihi gereklidir.")
+            .NotEqual(default(DateOnly)).WithMessage("Ödeme tarihi gereklidir.")
             .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
-            .WithMessage("Odeme tarihi gelecekte olamaz.");
+            .WithMessage("Ödeme tarihi gelecekte olamaz.");
 
         RuleFor(x => x.Currency)
             .Length(3).When(x => !string.IsNullOrEmpty(x.Currency));

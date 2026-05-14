@@ -11,7 +11,7 @@
         }
     </ChildContent>
     <Footer>
-        <Button Variant="Button.ButtonVariant.Ghost" OnClick="OnCancel" Disabled="@Working">Vazgec</Button>
+        <Button Variant="Button.ButtonVariant.Ghost" OnClick="OnCancel" Disabled="@Working">Vazgeç</Button>
         <Button Variant="Button.ButtonVariant.Danger" OnClick="OnConfirm" Loading="@Working">Sil</Button>
     </Footer>
 </Modal>
@@ -19,7 +19,7 @@
 @code {
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public string Title { get; set; } = "Silmeyi onayla";
-    [Parameter] public string Description { get; set; } = "Bu islemi geri alamazsiniz.";
+    [Parameter] public string Description { get; set; } = "Bu işlemi geri alamazsınız.";
     [Parameter] public string? ItemName { get; set; }
     [Parameter] public string? Warning { get; set; }
     [Parameter] public bool Working { get; set; }

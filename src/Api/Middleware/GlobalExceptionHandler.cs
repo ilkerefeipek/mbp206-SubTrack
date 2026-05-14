@@ -63,7 +63,7 @@ public sealed class GlobalExceptionHandler(
         {
             Type = "https://tools.ietf.org/html/rfc7807",
             Title = "Validation failed",
-            Detail = "Bir veya daha fazla dogrulama hatasi olustu.",
+            Detail = "Bir veya daha fazla doğrulama hatası oluştu.",
             Status = StatusCodes.Status400BadRequest,
             Extensions =
             {

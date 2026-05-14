@@ -137,7 +137,7 @@ public class SubscriptionsApiTests : IClassFixture<SubTrackWebAppFactory>
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var streaming = await db.Categories.SingleAsync(c => c.Name == "Streaming");
-        var music = await db.Categories.SingleAsync(c => c.Name == "Muzik");
+        var music = await db.Categories.SingleAsync(c => c.Name == "Müzik");
         await client.PostAsJsonAsync("/api/subscriptions", NewSubBody(streaming.Id, "Netflix"));
         await client.PostAsJsonAsync("/api/subscriptions", NewSubBody(music.Id, "Spotify"));
 

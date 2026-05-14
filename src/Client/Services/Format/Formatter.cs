@@ -28,7 +28,7 @@ public static class Formatter
     public static string FormatDateTime(DateTime dt) =>
         dt.ToString("dd MMM yyyy HH:mm", _tr);
 
-    /// <summary>Bugün / Yarın / N gün önce/sonra; uzak tarihlerde tam tarih.</summary>
+    /// <summary>Bugun / Yarin / N gun once/sonra; uzak tarihlerde tam tarih.</summary>
     public static string FormatRelativeDate(DateOnly date)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -36,11 +36,11 @@ public static class Formatter
 
         return diff switch
         {
-            0 => "Bugun",
-            1 => "Yarin",
-            -1 => "Dun",
-            > 1 and <= 7 => $"{diff} gun sonra",
-            < -1 and >= -7 => $"{-diff} gun once",
+            0 => "Bugün",
+            1 => "Yarın",
+            -1 => "Dün",
+            > 1 and <= 7 => $"{diff} gün sonra",
+            < -1 and >= -7 => $"{-diff} gün önce",
             _ => FormatDate(date)
         };
     }
@@ -51,22 +51,22 @@ public static class Formatter
         var delta = DateTime.UtcNow - dt;
         if (delta.TotalSeconds < 60)
         {
-            return "az once";
+            return "az önce";
         }
 
         if (delta.TotalMinutes < 60)
         {
-            return $"{(int)delta.TotalMinutes} dakika once";
+            return $"{(int)delta.TotalMinutes} dakika önce";
         }
 
         if (delta.TotalHours < 24)
         {
-            return $"{(int)delta.TotalHours} saat once";
+            return $"{(int)delta.TotalHours} saat önce";
         }
 
         if (delta.TotalDays < 7)
         {
-            return $"{(int)delta.TotalDays} gun once";
+            return $"{(int)delta.TotalDays} gün önce";
         }
 
         return FormatDate(dt);

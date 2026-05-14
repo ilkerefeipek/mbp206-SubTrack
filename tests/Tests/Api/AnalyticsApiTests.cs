@@ -100,7 +100,7 @@ public class AnalyticsApiTests : IClassFixture<SubTrackWebAppFactory>
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var streaming = await db.Categories.SingleAsync(c => c.Name == "Streaming");
-        var music = await db.Categories.SingleAsync(c => c.Name == "Muzik");
+        var music = await db.Categories.SingleAsync(c => c.Name == "Müzik");
         var productivity = await db.Categories.SingleAsync(c => c.Name == "Verimlilik");
 
         await client.PostAsJsonAsync("/api/subscriptions", NewSub(streaming.Id, 50m, BillingCycle.Monthly));

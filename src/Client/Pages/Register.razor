@@ -5,12 +5,12 @@
 @inject NavigationManager Navigation
 @inject IToastService Toasts
 
-<PageTitle>Kayit Ol — SubTrack</PageTitle>
+<PageTitle>Kayıt Ol — SubTrack</PageTitle>
 
 <div class="min-h-screen flex items-center justify-center px-6 py-12 bg-slate-50">
     <Card Class="w-full max-w-md" BodyClass="p-8">
-        <h1 class="text-2xl font-bold text-primary-dark">Yeni hesap olustur</h1>
-        <p class="text-sm text-slate-500 mt-1 mb-6">SubTrack hesabinizi 30 saniyede acin.</p>
+        <h1 class="text-2xl font-bold text-primary-dark">Yeni hesap oluştur</h1>
+        <p class="text-sm text-slate-500 mt-1 mb-6">SubTrack hesabınızı 30 saniyede açın.</p>
 
         <EditForm Model="_form" OnValidSubmit="HandleRegister">
             <DataAnnotationsValidator />
@@ -31,7 +31,7 @@
                         Variant="Button.ButtonVariant.Primary"
                         Size="Button.ButtonSize.Lg"
                         Loading="_loading">
-                    Kayit Ol
+                    Kayıt Ol
                 </Button>
             </div>
 
@@ -42,8 +42,8 @@
         </EditForm>
 
         <p class="mt-8 text-sm text-slate-600 text-center">
-            Zaten hesabin var mi?
-            <a href="/login" class="text-primary font-medium hover:underline">Giris yap</a>
+            Zaten hesabın var mı?
+            <a href="/login" class="text-primary font-medium hover:underline">Giriş yap</a>
         </p>
     </Card>
 </div>
@@ -65,20 +65,20 @@
                 _form.FirstName,
                 _form.LastName));
             await JwtState.SetAuthenticatedUserAsync(auth.Token);
-            Toasts.ShowSuccess($"Hosgeldiniz, {auth.User.FirstName}.");
+            Toasts.ShowSuccess($"Hoş geldiniz, {auth.User.FirstName}.");
             Navigation.NavigateTo("/", forceLoad: false);
         }
         catch (ApiException ex) when (ex.IsConflict)
         {
-            _error = "Bu e-posta zaten kayitli.";
+            _error = "Bu e-posta zaten kayıtlı.";
         }
         catch (ApiException ex) when (ex.IsValidation)
         {
-            _error = ex.Detail ?? "Lutfen tum alanlari dogru doldurun.";
+            _error = ex.Detail ?? "Lütfen tüm alanları doğru doldurun.";
         }
         catch (ApiException ex) when (ex.IsRateLimited)
         {
-            _error = "Cok fazla deneme. Lutfen biraz bekleyip tekrar deneyin.";
+            _error = "Çok fazla deneme. Lütfen biraz bekleyip tekrar deneyin.";
         }
         catch (ApiException ex)
         {
@@ -86,7 +86,7 @@
         }
         catch
         {
-            _error = "Beklenmeyen bir hata olustu.";
+            _error = "Beklenmeyen bir hata oluştu.";
         }
         finally
         {
@@ -103,11 +103,11 @@
         public string LastName { get; set; } = "";
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "E-posta gereklidir.")]
-        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Gecerli bir e-posta giriniz.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Geçerli bir e-posta giriniz.")]
         public string Email { get; set; } = "";
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Parola gereklidir.")]
-        [System.ComponentModel.DataAnnotations.StringLength(128, MinimumLength = 8, ErrorMessage = "Parola en az 8 karakter olmali.")]
+        [System.ComponentModel.DataAnnotations.StringLength(128, MinimumLength = 8, ErrorMessage = "Parola en az 8 karakter olmalı.")]
         public string Password { get; set; } = "";
     }
 }

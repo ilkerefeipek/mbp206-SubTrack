@@ -7,7 +7,7 @@ namespace SubTrack.Domain.Common.Exceptions;
 /// </summary>
 public sealed class InvalidCredentialsException : AppException
 {
-    public const string GenericMessage = "E-posta veya parola hatali.";
+    public const string GenericMessage = "E-posta veya parola hatalı.";
 
     public InvalidCredentialsException() : base(GenericMessage) { }
 }
