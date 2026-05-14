@@ -25,7 +25,7 @@ public class CategoriesApiTests : IClassFixture<SubTrackWebAppFactory>
         var items = await response.Content.ReadFromJsonAsync<List<CategoryDto>>();
         items.Should().NotBeNull();
         items!.Should().HaveCountGreaterThanOrEqualTo(5);
-        items.Select(c => c.Name).Should().Contain(new[] { "Streaming", "Muzik", "Verimlilik" });
+        items.Select(c => c.Name).Should().Contain(new[] { "Streaming", "Müzik", "Verimlilik" });
     }
 
     [Fact]

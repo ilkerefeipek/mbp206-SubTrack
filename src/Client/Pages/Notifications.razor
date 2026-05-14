@@ -8,12 +8,12 @@
 <div class="space-y-6">
     <header>
         <h1 class="text-2xl font-bold text-primary-dark tracking-tight">Bildirimler</h1>
-        <p class="text-sm text-slate-500 mt-1">Yenileme hatirlatmalari ve kullanilmayan abonelik uyarilari.</p>
+        <p class="text-sm text-slate-500 mt-1">Yenileme hatırlatmaları ve kullanılmayan abonelik uyarıları.</p>
     </header>
 
     <div class="flex items-center gap-2">
-        <button class="@TabClass(false)" @onclick="@(() => SwitchTab(false))">Tumu</button>
-        <button class="@TabClass(true)" @onclick="@(() => SwitchTab(true))">Okunmamis @(_unreadCount > 0 ? $"({_unreadCount})" : "")</button>
+        <button class="@TabClass(false)" @onclick="@(() => SwitchTab(false))">Tümü</button>
+        <button class="@TabClass(true)" @onclick="@(() => SwitchTab(true))">Okunmamış @(_unreadCount > 0 ? $"({_unreadCount})" : "")</button>
     </div>
 
     @if (_loading)
@@ -30,15 +30,15 @@
     else if (_loadError is not null)
     {
         <Card>
-            <ErrorState Title="Bildirimler yuklenemedi" Description="@_loadError" OnRetry="LoadAsync" />
+            <ErrorState Title="Bildirimler yüklenemedi" Description="@_loadError" OnRetry="LoadAsync" />
         </Card>
     }
     else if (_displayed.Count == 0)
     {
         <Card>
             <EmptyState IconName="bell"
-                        Title="@(_showUnread ? "Okunmamis bildirimin yok" : "Henuz bildirim yok")"
-                        Description="Yeni yenileme veya kullanim uyarisi geldiginde burada gorunecek." />
+                        Title="@(_showUnread ? "Okunmamış bildirimin yok" : "Henüz bildirim yok")"
+                        Description="Yeni yenileme veya kullanım uyarısı geldiğinde burada görünecek." />
         </Card>
     }
     else
@@ -111,7 +111,7 @@
         {
             await NotificationsApi.MarkReadAsync(n.Id);
             await LoadAsync();
-            Toasts.ShowInfo("Bildirim okundu olarak isaretlendi.");
+            Toasts.ShowInfo("Bildirim okundu olarak işaretlendi.");
         }
         catch (ApiException ex)
         {

@@ -8,13 +8,13 @@
                     <RedirectToLogin />
                 </NotAuthorized>
                 <Authorizing>
-                    <p class="text-slate-500 p-6">Yukleniyor...</p>
+                    <p class="text-slate-500 p-6">Yükleniyor...</p>
                 </Authorizing>
             </AuthorizeRouteView>
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
         </Found>
         <NotFound>
-            <PageTitle>Sayfa Bulunamadi</PageTitle>
+            <PageTitle>Sayfa Bulunamadı</PageTitle>
             <LayoutView Layout="@typeof(MainLayout)">
                 <NotFoundPage />
             </LayoutView>

@@ -47,6 +47,6 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
             await authService.LogoutAsync(jti, expiresAt, ct);
         }
 
-        return Ok(new { message = "Cikis yapildi." });
+        return Ok(new { message = "Çıkış yapıldı." });
     }
 }

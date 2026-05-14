@@ -73,7 +73,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
         await _page!.GotoAsync($"{BaseUrl}/login");
         await _page.GetByLabel("E-posta").FillAsync("demo@subtrack.app");
         await _page.GetByLabel("Parola").FillAsync("Test1234!");
-        await _page.GetByRole(AriaRole.Button, new() { Name = "Giris Yap" }).ClickAsync();
+        await _page.GetByRole(AriaRole.Button, new() { Name = "Giriş Yap" }).ClickAsync();
         await _page.WaitForURLAsync(new Regex($"^{Regex.Escape(BaseUrl)}/?$"));
     }
 
@@ -112,7 +112,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
 
         await _page.GetByLabel("E-posta").FillAsync("demo@subtrack.app");
         await _page.GetByLabel("Parola").FillAsync("Test1234!");
-        await _page.GetByRole(AriaRole.Button, new() { Name = "Giris Yap" }).ClickAsync();
+        await _page.GetByRole(AriaRole.Button, new() { Name = "Giriş Yap" }).ClickAsync();
 
         // Dashboard'a yonlendirildi
         await _page.WaitForURLAsync(new Regex($"^{Regex.Escape(BaseUrl)}/?$"));
@@ -139,12 +139,12 @@ public class PlaywrightE2ETests : IAsyncLifetime
 
         await _page.GetByLabel("E-posta").FillAsync("demo@subtrack.app");
         await _page.GetByLabel("Parola").FillAsync("WrongPass123!");
-        await _page.GetByRole(AriaRole.Button, new() { Name = "Giris Yap" }).ClickAsync();
+        await _page.GetByRole(AriaRole.Button, new() { Name = "Giriş Yap" }).ClickAsync();
 
         // role=alert kutusunda generic hata mesaji
         var alert = _page.Locator("[role='alert']").First;
         await Expect(alert).ToBeVisibleAsync(new() { Timeout = 10000 });
-        await Expect(alert).ToContainTextAsync("E-posta veya parola hatali");
+        await Expect(alert).ToContainTextAsync("E-posta veya parola hatalı");
 
         // URL hala /login
         _page.Url.Should().Contain("/login");
@@ -175,7 +175,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
         await textInputs.Nth(1).FillAsync("User");
         await _page.Locator("input[type='email']").FillAsync(email);
         await _page.Locator("input[type='password']").FillAsync("Test1234!");
-        await _page.GetByRole(AriaRole.Button, new() { Name = "Kayit Ol" }).ClickAsync();
+        await _page.GetByRole(AriaRole.Button, new() { Name = "Kayıt Ol" }).ClickAsync();
 
         // Dashboard'a yonlendirildi
         await _page.WaitForURLAsync(new Regex($"^{Regex.Escape(BaseUrl)}/?$"), new() { Timeout = 15000 });
@@ -199,11 +199,11 @@ public class PlaywrightE2ETests : IAsyncLifetime
 
         var uniqueName = $"E2E-Test-{DateTime.UtcNow.Ticks % 1_000_000}";
 
-        await _page.GetByLabel("Servis Adi").FillAsync(uniqueName);
+        await _page.GetByLabel("Servis Adı").FillAsync(uniqueName);
         await SelectByLabel("Kategori").SelectOptionAsync(new SelectOptionValue { Label = "Streaming" });
         await _page.GetByLabel("Tutar").FillAsync("49.99");
         await SelectByLabel("Para Birimi").SelectOptionAsync(new SelectOptionValue { Label = "TRY" });
-        await SelectByLabel("Fatura Donemi").SelectOptionAsync(new SelectOptionValue { Label = "Aylik" });
+        await SelectByLabel("Fatura Dönemi").SelectOptionAsync(new SelectOptionValue { Label = "Aylık" });
 
         // DatePicker: bugun + 30 gun
         var nextDate = DateTime.Today.AddDays(30).ToString("yyyy-MM-dd");
@@ -256,7 +256,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
         await Expect(_page.Locator("text=\"Spotify Premium\"").First).ToBeVisibleAsync();
 
         // 1) Search input ile filtre (debouncer 300ms sonra API'ye refetch tetikler)
-        await _page.GetByPlaceholder("Abonelik adina gore ara...").FillAsync("Spotify");
+        await _page.GetByPlaceholder("Abonelik adına göre ara...").FillAsync("Spotify");
 
         await Expect(_page.Locator("text=\"Spotify Premium\"").First).ToBeVisibleAsync(new() { Timeout = 10000 });
         await Expect(_page.Locator("text=\"Netflix Premium\"")).ToHaveCountAsync(0);
@@ -264,7 +264,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
         await Expect(_page.Locator("text=\"Adobe Creative Cloud\"")).ToHaveCountAsync(0);
 
         // 2) Search'i temizle ve kategori dropdown ile filtre (S6 fix: bind-Value:after LoadAsync)
-        await _page.GetByPlaceholder("Abonelik adina gore ara...").FillAsync("");
+        await _page.GetByPlaceholder("Abonelik adına göre ara...").FillAsync("");
         // Sayfada tek <select> kategori dropdown'u — "Streaming" sec
         await _page.Locator("select").First.SelectOptionAsync(new SelectOptionValue { Label = "Streaming" });
 
@@ -289,7 +289,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
         var disposableName = $"TC07-{DateTime.UtcNow.Ticks % 1_000_000}";
 
         await _page!.GotoAsync($"{BaseUrl}/subscriptions/new");
-        await _page.GetByLabel("Servis Adi").FillAsync(disposableName);
+        await _page.GetByLabel("Servis Adı").FillAsync(disposableName);
         await SelectByLabel("Kategori").SelectOptionAsync(new SelectOptionValue { Label = "Streaming" });
         await _page.GetByLabel("Tutar").FillAsync("9.99");
         var nextDate = DateTime.Today.AddDays(30).ToString("yyyy-MM-dd");
@@ -308,7 +308,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
         // Modal acildi
         var modal = _page.GetByRole(AriaRole.Dialog);
         await Expect(modal).ToBeVisibleAsync();
-        await Expect(modal).ToContainTextAsync("Aboneligi sil?");
+        await Expect(modal).ToContainTextAsync("Aboneliği sil?");
         await Expect(modal.Locator($"text=\"{disposableName}\"")).ToBeVisibleAsync();
 
         // Modal icindeki "Sil" (footer) — onayli silme
@@ -332,9 +332,9 @@ public class PlaywrightE2ETests : IAsyncLifetime
 
         // 4 KpiCard etiketi gorunur
         await Expect(_page!.GetByText("Aktif Abonelik").First).ToBeVisibleAsync(new() { Timeout = 10000 });
-        await Expect(_page.GetByText("Aylik Toplam").First).ToBeVisibleAsync();
-        await Expect(_page.GetByText("Yakinda Yenilenecek").First).ToBeVisibleAsync();
-        await Expect(_page.GetByText("Kullanilmiyor").First).ToBeVisibleAsync();
+        await Expect(_page.GetByText("Aylık Toplam").First).ToBeVisibleAsync();
+        await Expect(_page.GetByText("Yakında Yenilenecek").First).ToBeVisibleAsync();
+        await Expect(_page.GetByText("Kullanılmıyor").First).ToBeVisibleAsync();
 
         // Seed verisi (DataSeeder): 7 abonelik, hepsi Active.
         //   Netflix 229.99/ay TRY + Spotify 59.99/ay TRY + Disney+ 149.99/ay TRY
@@ -344,7 +344,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
         // Baseline ilk kosum: 619.88 (TRY) + 16 (USD direk) = 635.88 TL
         // TC-04 her kosumda demo user'a +49.99 TRY abonelik ekler (deterministik degil).
         // Strict ama esnek: rakam tr-TR format + non-zero + minimum 600 TL.
-        var aylikToplamLabel = _page.Locator("text=\"Aylik Toplam\"").First;
+        var aylikToplamLabel = _page.Locator("text=\"Aylık Toplam\"").First;
         await Expect(aylikToplamLabel).ToBeVisibleAsync();
         var kpiCard = aylikToplamLabel.Locator("xpath=ancestor::div[contains(@class,'rounded-xl')]").First;
         var amountEl = kpiCard.Locator(".text-3xl").First;
@@ -374,11 +374,11 @@ public class PlaywrightE2ETests : IAsyncLifetime
         await _page!.GotoAsync($"{BaseUrl}/analytics");
 
         // Akilli Oneriler bolumu yuklendi
-        await Expect(_page.GetByText("Akilli Oneriler").First).ToBeVisibleAsync(new() { Timeout = 15000 });
+        await Expect(_page.GetByText("Akıllı Öneriler").First).ToBeVisibleAsync(new() { Timeout = 15000 });
 
         // Seed'de Adobe (LastUsedDate -60) ve Disney+ (-45) threshold 30+ → unused
         // InsightCard h3 title formati: "{ServiceName} kullanilmiyor"
-        var unusedInsight = _page.Locator("h3:has-text(\"kullanilmiyor\")").First;
+        var unusedInsight = _page.Locator("h3:has-text(\"kullanılmıyor\")").First;
         await Expect(unusedInsight).ToBeVisibleAsync(new() { Timeout = 15000 });
 
         await ScreenshotAsync("TC-09");
@@ -396,7 +396,7 @@ public class PlaywrightE2ETests : IAsyncLifetime
         await _page!.Locator("button[aria-haspopup='true']").First.ClickAsync();
 
         // "Cikis Yap" butonuna tikla (UserMenu icinde)
-        await _page.GetByRole(AriaRole.Button, new() { Name = "Cikis Yap" }).ClickAsync();
+        await _page.GetByRole(AriaRole.Button, new() { Name = "Çıkış Yap" }).ClickAsync();
 
         // /login'e yonlendirme
         await _page.WaitForURLAsync(new Regex($"^{Regex.Escape(BaseUrl)}/login"), new() { Timeout = 10000 });

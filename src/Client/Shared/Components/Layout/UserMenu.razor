@@ -32,7 +32,7 @@
             <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-danger hover:bg-red-50 transition focus:outline-none focus-visible:ring-2 ring-primary/40"
                     @onclick="LogoutAsync">
                 <Icon Name="log-out" Class="w-4 h-4" />
-                Cikis Yap
+                Çıkış Yap
             </button>
         </div>
     }
@@ -41,7 +41,7 @@
 @code {
     private bool _isOpen;
     private string _initials = "?";
-    private string _displayName = "Kullanici";
+    private string _displayName = "Kullanıcı";
     private string _email = "";
 
     protected override async Task OnInitializedAsync()
@@ -50,7 +50,7 @@
         if (state.User.Identity?.IsAuthenticated ?? false)
         {
             _email = state.User.FindFirst("email")?.Value ?? "";
-            _displayName = !string.IsNullOrEmpty(_email) ? _email.Split('@')[0] : "Kullanici";
+            _displayName = !string.IsNullOrEmpty(_email) ? _email.Split('@')[0] : "Kullanıcı";
             _initials = _displayName.Length > 0 ? _displayName[0].ToString().ToUpperInvariant() : "?";
         }
     }
@@ -69,7 +69,7 @@
             // Best-effort: even if backend fails, clear local state.
         }
         await JwtState.ClearAuthenticatedUserAsync();
-        Toasts.ShowInfo("Cikis yapildi.");
+        Toasts.ShowInfo("Çıkış yapıldı.");
         Navigation.NavigateTo("/login", forceLoad: false);
     }
 }

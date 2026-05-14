@@ -9,15 +9,15 @@
 <div class="space-y-8">
     <header>
         <h1 class="text-2xl font-bold text-primary-dark tracking-tight">
-            Merhaba, @(_firstName ?? "kullanici")!
+            Merhaba, @(_firstName ?? "kullanıcı")!
         </h1>
-        <p class="text-sm text-slate-500 mt-1">@Formatter.FormatDate(DateOnly.FromDateTime(DateTime.Today)) · Bugun aboneliklerinizin ozeti.</p>
+        <p class="text-sm text-slate-500 mt-1">@Formatter.FormatDate(DateOnly.FromDateTime(DateTime.Today)) · Bugün aboneliklerinizin özeti.</p>
     </header>
 
     @if (_loadError is not null)
     {
         <Card>
-            <ErrorState Title="Veriler yuklenemedi" Description="@_loadError" OnRetry="LoadAsync" />
+            <ErrorState Title="Veriler yüklenemedi" Description="@_loadError" OnRetry="LoadAsync" />
         </Card>
     }
     else
@@ -34,18 +34,18 @@
             {
                 <KpiCard Label="Aktif Abonelik" Value="@_summary.ActiveCount.ToString()"
                          IconName="credit-card" AccentColor="KpiCard.Accent.Primary" />
-                <KpiCard Label="Aylik Toplam" Value="@Formatter.FormatCurrency(_summary.MonthlyTotal, _summary.Currency)"
+                <KpiCard Label="Aylık Toplam" Value="@Formatter.FormatCurrency(_summary.MonthlyTotal, _summary.Currency)"
                          IconName="bar-chart" AccentColor="KpiCard.Accent.Success" />
-                <KpiCard Label="Yakinda Yenilenecek" Value="@_summary.UpcomingCount.ToString()"
+                <KpiCard Label="Yakında Yenilenecek" Value="@_summary.UpcomingCount.ToString()"
                          IconName="bell" AccentColor="KpiCard.Accent.Warning" />
-                <KpiCard Label="Kullanilmiyor" Value="@_summary.UnusedCount.ToString()"
+                <KpiCard Label="Kullanılmıyor" Value="@_summary.UnusedCount.ToString()"
                          IconName="alert-circle" AccentColor="KpiCard.Accent.Danger" />
             }
         </section>
 
         <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <Card>
-                <h2 class="text-base font-semibold text-slate-900 mb-4">Kategori Dagilimi</h2>
+                <h2 class="text-base font-semibold text-slate-900 mb-4">Kategori Dağılımı</h2>
                 @if (_loading)
                 {
                     <Skeleton Width="100%" Height="280px" Variant="Skeleton.Shape.Box" />
@@ -62,7 +62,7 @@
             </Card>
 
             <Card>
-                <h2 class="text-base font-semibold text-slate-900 mb-4">Son 6 Ay Odeme Trendi</h2>
+                <h2 class="text-base font-semibold text-slate-900 mb-4">Son 6 Ay Ödeme Trendi</h2>
                 @if (_loading)
                 {
                     <Skeleton Width="100%" Height="280px" Variant="Skeleton.Shape.Box" />
@@ -73,14 +73,14 @@
                 }
                 else
                 {
-                    <EmptyState Title="Veri yok" Description="Henuz odeme kaydi yok." />
+                    <EmptyState Title="Veri yok" Description="Henüz ödeme kaydı yok." />
                 }
             </Card>
         </section>
 
         <section>
             <Card>
-                <h2 class="text-base font-semibold text-slate-900 mb-4">Yakinda Yenilenecek</h2>
+                <h2 class="text-base font-semibold text-slate-900 mb-4">Yakında Yenilenecek</h2>
                 @if (_loading)
                 {
                     <div class="space-y-2">
@@ -107,7 +107,7 @@
                 }
                 else
                 {
-                    <EmptyState Title="Yaklasan odeme yok" Description="Onumuzdeki 30 gun icinde yenilenecek aboneligin yok." />
+                    <EmptyState Title="Yaklaşan ödeme yok" Description="Önümüzdeki 30 gün içinde yenilenecek aboneliğin yok." />
                 }
             </Card>
         </section>
@@ -157,7 +157,7 @@
         }
         catch
         {
-            _loadError = "Beklenmeyen bir hata olustu.";
+            _loadError = "Beklenmeyen bir hata oluştu.";
         }
         finally
         {

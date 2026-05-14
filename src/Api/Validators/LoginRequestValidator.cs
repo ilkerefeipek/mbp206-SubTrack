@@ -9,10 +9,10 @@ public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("E-posta gereklidir.")
-            .EmailAddress().WithMessage("Gecerli bir e-posta adresi giriniz.");
+            .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz.");
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Sifre gereklidir.")
+            .NotEmpty().WithMessage("Şifre gereklidir.")
             .MaximumLength(128);
     }
 }

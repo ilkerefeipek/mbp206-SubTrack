@@ -8,7 +8,7 @@
             <p class="mt-1 text-sm text-slate-600">@Insight.Description</p>
             @if (Insight.PotentialSavings.HasValue)
             {
-                <p class="mt-2 text-xs font-medium text-success">Olasi tasarruf: @Formatter.FormatCurrency(Insight.PotentialSavings.Value)</p>
+                <p class="mt-2 text-xs font-medium text-success">Olası tasarruf: @Formatter.FormatCurrency(Insight.PotentialSavings.Value)</p>
             }
         </div>
         @if (!string.IsNullOrEmpty(ActionLabel) && OnAction.HasDelegate)
@@ -35,10 +35,10 @@
 
     private string ActionLabel => Insight.Type switch
     {
-        InsightType.UnusedSubscription => "Incele",
+        InsightType.UnusedSubscription => "İncele",
         InsightType.HighSpending => "Detaylar",
-        InsightType.UpcomingRenewal => "Goruntule",
-        InsightType.DuplicateService => "Karsilastir",
+        InsightType.UpcomingRenewal => "Görüntüle",
+        InsightType.DuplicateService => "Karşılaştır",
         _ => ""
     };
 

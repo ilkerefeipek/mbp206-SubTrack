@@ -8,11 +8,11 @@ public sealed class SubscriptionCreateRequestValidator : AbstractValidator<Subsc
     public SubscriptionCreateRequestValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Abonelik adi gereklidir.")
+            .NotEmpty().WithMessage("Abonelik adı gereklidir.")
             .MaximumLength(120);
 
         RuleFor(x => x.CategoryId)
-            .GreaterThan(0).WithMessage("Gecerli bir kategori seciniz.");
+            .GreaterThan(0).WithMessage("Geçerli bir kategori seçiniz.");
 
         RuleFor(x => x.Amount)
             .GreaterThanOrEqualTo(0).WithMessage("Tutar negatif olamaz.")
@@ -20,14 +20,14 @@ public sealed class SubscriptionCreateRequestValidator : AbstractValidator<Subsc
 
         RuleFor(x => x.Currency)
             .Length(3).When(x => !string.IsNullOrEmpty(x.Currency))
-            .WithMessage("Para birimi 3 karakter olmali (orn. TRY, USD).");
+            .WithMessage("Para birimi 3 karakter olmalı (örn. TRY, USD).");
 
         RuleFor(x => x.BillingCycle)
-            .IsInEnum().WithMessage("Gecerli bir fatura donemi seciniz.");
+            .IsInEnum().WithMessage("Geçerli bir fatura dönemi seçiniz.");
 
         RuleFor(x => x.NextBilling)
             .NotEqual(default(DateOnly)).WithMessage("Sonraki fatura tarihi gereklidir.")
             .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
-            .WithMessage("Sonraki fatura tarihi gecmiste olamaz.");
+            .WithMessage("Sonraki fatura tarihi geçmişte olamaz.");
     }
 }

@@ -68,6 +68,6 @@ public abstract class ApiClientBase(HttpClient http)
             throw await ApiException.FromResponseAsync(resp, ct);
         }
         var data = await resp.Content.ReadFromJsonAsync<T>(JsonOptions, ct);
-        return data ?? throw new InvalidOperationException("Bos yanit alindi.");
+        return data ?? throw new InvalidOperationException("Boş yanıt alındı.");
     }
 }

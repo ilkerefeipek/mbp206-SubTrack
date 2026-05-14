@@ -8,7 +8,7 @@
     <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-primary-dark tracking-tight">Analiz</h1>
-            <p class="text-sm text-slate-500 mt-1">Aylik trend, kategori dagilimi ve akilli oneriler.</p>
+            <p class="text-sm text-slate-500 mt-1">Aylık trend, kategori dağılımı ve akıllı öneriler.</p>
         </div>
         <div class="w-full sm:w-56">
             <Select TItem="MonthOption" TValue="int"
@@ -23,7 +23,7 @@
     @if (_loadError is not null)
     {
         <Card>
-            <ErrorState Title="Analiz verileri yuklenemedi" Description="@_loadError" OnRetry="LoadAsync" />
+            <ErrorState Title="Analiz verileri yüklenemedi" Description="@_loadError" OnRetry="LoadAsync" />
         </Card>
     }
     else
@@ -38,11 +38,11 @@
             }
             else
             {
-                <KpiCard Label="Aylik Toplam" Value="@Formatter.FormatCurrency(_summary.MonthlyTotal, _summary.Currency)"
+                <KpiCard Label="Aylık Toplam" Value="@Formatter.FormatCurrency(_summary.MonthlyTotal, _summary.Currency)"
                          IconName="bar-chart" AccentColor="KpiCard.Accent.Primary" />
                 <KpiCard Label="Aktif Abonelik" Value="@_summary.ActiveCount.ToString()"
                          IconName="credit-card" AccentColor="KpiCard.Accent.Success" />
-                <KpiCard Label="Kullanilmiyor" Value="@_summary.UnusedCount.ToString()"
+                <KpiCard Label="Kullanılmıyor" Value="@_summary.UnusedCount.ToString()"
                          IconName="alert-circle" AccentColor="KpiCard.Accent.Danger" />
             }
         </section>
@@ -60,12 +60,12 @@
                 }
                 else
                 {
-                    <EmptyState Title="Trend verisi yok" Description="Bu donemde odeme kaydi bulunmuyor." />
+                    <EmptyState Title="Trend verisi yok" Description="Bu dönemde ödeme kaydı bulunmuyor." />
                 }
             </Card>
 
             <Card>
-                <h2 class="text-base font-semibold text-slate-900 mb-4">Kategori Dagilimi</h2>
+                <h2 class="text-base font-semibold text-slate-900 mb-4">Kategori Dağılımı</h2>
                 @if (_loading)
                 {
                     <Skeleton Width="100%" Height="320px" Variant="Skeleton.Shape.Box" />
@@ -86,13 +86,13 @@
                 }
                 else
                 {
-                    <EmptyState Title="Veri yok" Description="Aktif abonelik bulunmadigi icin dagilim hesaplanamiyor." />
+                    <EmptyState Title="Veri yok" Description="Aktif abonelik bulunmadığı için dağılım hesaplanamıyor." />
                 }
             </Card>
         </section>
 
         <section>
-            <h2 class="text-base font-semibold text-slate-900 mb-3">Akilli Oneriler</h2>
+            <h2 class="text-base font-semibold text-slate-900 mb-3">Akıllı Öneriler</h2>
             @if (_loading)
             {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -116,7 +116,7 @@
                 <Card>
                     <EmptyState IconName="bar-chart"
                                 Title="Aboneliklerin yolunda"
-                                Description="Su an dikkat cekecek bir abonelik onerisi yok. Tebrikler!" />
+                                Description="Şu an dikkat çekecek bir abonelik önerisi yok. Tebrikler!" />
                 </Card>
             }
         </section>
@@ -181,7 +181,7 @@
         }
         catch
         {
-            _loadError = "Beklenmeyen bir hata olustu.";
+            _loadError = "Beklenmeyen bir hata oluştu.";
         }
         finally
         {

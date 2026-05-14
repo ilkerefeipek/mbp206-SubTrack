@@ -154,7 +154,7 @@ public class AuthApiTests : IClassFixture<SubTrackWebAppFactory>
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         var body = await response.Content.ReadAsStringAsync();
-        body.Should().Contain("E-posta veya parola hatali");
+        body.Should().Contain("E-posta veya parola hatalı");
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public class AuthApiTests : IClassFixture<SubTrackWebAppFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         var body = await response.Content.ReadAsStringAsync();
         // Same generic message as wrong-password — no email enumeration leak.
-        body.Should().Contain("E-posta veya parola hatali");
+        body.Should().Contain("E-posta veya parola hatalı");
     }
 
     [Fact]

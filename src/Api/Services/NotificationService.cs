@@ -24,7 +24,7 @@ public sealed class NotificationService(
             UserId = subscription.UserId,
             SubscriptionId = subscription.Id,
             Type = NotificationType.RenewalReminder,
-            Message = $"{subscription.Name} aboneliginiz {subscription.NextBilling:yyyy-MM-dd} tarihinde yenilenecek.",
+            Message = $"{subscription.Name} aboneliğiniz {subscription.NextBilling:yyyy-MM-dd} tarihinde yenilenecek.",
             Channel = "in-app",
             Priority = "normal",
             IsRead = false,
@@ -37,7 +37,7 @@ public sealed class NotificationService(
         await emailSender.SendAsync(
             new EmailMessage(
                 user.Email,
-                $"Yenileme hatirlatmasi: {subscription.Name}",
+                $"Yenileme hatırlatması: {subscription.Name}",
                 notification.Message),
             ct);
 
@@ -57,7 +57,7 @@ public sealed class NotificationService(
             UserId = subscription.UserId,
             SubscriptionId = subscription.Id,
             Type = NotificationType.UnusedAlert,
-            Message = $"{subscription.Name} aboneliginiz son {user.ThresholdDays} gunden uzun suredir kullanilmadi.",
+            Message = $"{subscription.Name} aboneliğiniz son {user.ThresholdDays} günden uzun süredir kullanılmadı.",
             Channel = "email",
             Priority = "high",
             IsRead = false,
@@ -70,7 +70,7 @@ public sealed class NotificationService(
         await emailSender.SendAsync(
             new EmailMessage(
                 user.Email,
-                $"Kullanilmayan abonelik: {subscription.Name}",
+                $"Kullanılmayan abonelik: {subscription.Name}",
                 notification.Message),
             ct);
     }

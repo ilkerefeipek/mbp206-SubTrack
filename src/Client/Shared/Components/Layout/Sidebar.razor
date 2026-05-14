@@ -6,7 +6,7 @@
             <span class="w-2 h-6 bg-accent rounded-sm" aria-hidden="true"></span>
             SubTrack
         </a>
-        <p class="text-xs text-white/60 mt-1">Abonelik Yonetimi</p>
+        <p class="text-xs text-white/60 mt-1">Abonelik Yönetimi</p>
     </div>
 
     <nav class="flex-1 px-3 py-5 space-y-1">
@@ -62,7 +62,7 @@
         if (user.Identity?.IsAuthenticated ?? false)
         {
             _email = user.FindFirst("email")?.Value ?? "";
-            _displayName = !string.IsNullOrEmpty(_email) ? _email.Split('@')[0] : "Kullanici";
+            _displayName = !string.IsNullOrEmpty(_email) ? _email.Split('@')[0] : "Kullanıcı";
             _initials = _displayName.Length > 0 ? _displayName[0].ToString().ToUpperInvariant() : "?";
         }
     }

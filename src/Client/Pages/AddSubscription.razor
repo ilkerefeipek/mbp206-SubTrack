@@ -10,7 +10,7 @@
 <div class="max-w-2xl space-y-6">
     <header>
         <h1 class="text-2xl font-bold text-primary-dark tracking-tight">Yeni Abonelik Ekle</h1>
-        <p class="text-sm text-slate-500 mt-1">Aboneliginizin temel bilgilerini girin; sonraki fatura tarihinden itibaren takip baslar.</p>
+        <p class="text-sm text-slate-500 mt-1">Aboneliğinizin temel bilgilerini girin; sonraki fatura tarihinden itibaren takip başlar.</p>
     </header>
 
     <Card>
@@ -19,7 +19,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div class="sm:col-span-2">
-                    <Input TValue="string" Label="Servis Adi" Required="true"
+                    <Input TValue="string" Label="Servis Adı" Required="true"
                            Placeholder="Netflix, Spotify, Adobe..."
                            Error="@_errors.GetValueOrDefault(nameof(_form.Name))"
                            @bind-Value="_form.Name" />
@@ -31,14 +31,14 @@
                             Options="_categories"
                             DisplaySelector="@(c => c.Name)"
                             ValueSelector="@(c => c.Id)"
-                            Placeholder="Kategori secin"
+                            Placeholder="Kategori seçin"
                             Error="@_errors.GetValueOrDefault(nameof(_form.CategoryId))"
                             @bind-Value="_form.CategoryId" />
                 </div>
 
                 <div>
                     <Select TItem="BillingCycle" TValue="BillingCycle"
-                            Label="Fatura Donemi"
+                            Label="Fatura Dönemi"
                             Options="@(new[] { BillingCycle.Weekly, BillingCycle.Monthly, BillingCycle.Quarterly, BillingCycle.Yearly })"
                             DisplaySelector="@(c => CycleLabel(c))"
                             ValueSelector="@(c => c)"
@@ -75,7 +75,7 @@
                 <Button Variant="Button.ButtonVariant.Ghost"
                         Disabled="@_loading"
                         OnClick="@(() => Navigation.NavigateTo("/subscriptions"))">
-                    Vazgec
+                    Vazgeç
                 </Button>
                 <Button Type="submit"
                         Variant="Button.ButtonVariant.Primary"
@@ -111,7 +111,7 @@
         }
         catch (ApiException ex)
         {
-            _topError = $"Kategoriler yuklenemedi: {ex.Detail ?? ex.Message}";
+            _topError = $"Kategoriler yüklenemedi: {ex.Detail ?? ex.Message}";
         }
     }
 
@@ -141,11 +141,11 @@
             {
                 _errors[kv.Key] = string.Join(" ", kv.Value);
             }
-            _topError = "Lutfen formu kontrol edin.";
+            _topError = "Lütfen formu kontrol edin.";
         }
         catch (ApiException ex) when (ex.IsNotFound)
         {
-            _errors[nameof(_form.CategoryId)] = "Secilen kategori artik gecerli degil.";
+            _errors[nameof(_form.CategoryId)] = "Seçilen kategori artık geçerli değil.";
         }
         catch (ApiException ex)
         {
@@ -153,7 +153,7 @@
         }
         catch
         {
-            _topError = "Beklenmeyen bir hata olustu.";
+            _topError = "Beklenmeyen bir hata oluştu.";
         }
         finally
         {
@@ -163,20 +163,20 @@
 
     private static string CycleLabel(BillingCycle c) => c switch
     {
-        BillingCycle.Weekly => "Haftalik",
-        BillingCycle.Monthly => "Aylik",
-        BillingCycle.Quarterly => "3 Aylik",
-        BillingCycle.Yearly => "Yillik",
+        BillingCycle.Weekly => "Haftalık",
+        BillingCycle.Monthly => "Aylık",
+        BillingCycle.Quarterly => "3 Aylık",
+        BillingCycle.Yearly => "Yıllık",
         _ => c.ToString()
     };
 
     private sealed class FormModel
     {
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Servis adi gereklidir.")]
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Servis adı gereklidir.")]
         [System.ComponentModel.DataAnnotations.MaxLength(120)]
         public string Name { get; set; } = "";
 
-        [System.ComponentModel.DataAnnotations.Range(1, long.MaxValue, ErrorMessage = "Kategori secimi gereklidir.")]
+        [System.ComponentModel.DataAnnotations.Range(1, long.MaxValue, ErrorMessage = "Kategori seçimi gereklidir.")]
         public long CategoryId { get; set; }
 
         [System.ComponentModel.DataAnnotations.Range(0.0, double.MaxValue, ErrorMessage = "Tutar negatif olamaz.")]

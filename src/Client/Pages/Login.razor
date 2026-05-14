@@ -5,7 +5,7 @@
 @inject NavigationManager Navigation
 @inject IToastService Toasts
 
-<PageTitle>Giris — SubTrack</PageTitle>
+<PageTitle>Giriş — SubTrack</PageTitle>
 
 <div class="min-h-screen flex bg-slate-50">
     @* Brand panel — desktop only *@
@@ -15,23 +15,23 @@
                 <span class="w-3 h-8 bg-accent rounded-sm" aria-hidden="true"></span>
                 SubTrack
             </h1>
-            <p class="text-white/70 text-sm mt-2">Akilli Abonelik Yonetimi</p>
+            <p class="text-white/70 text-sm mt-2">Akıllı Abonelik Yönetimi</p>
         </div>
         <div class="max-w-md">
-            <p class="text-2xl font-semibold leading-tight mb-3">Aboneliklerinizi tek yerden yonetin.</p>
+            <p class="text-2xl font-semibold leading-tight mb-3">Aboneliklerinizi tek yerden yönetin.</p>
             <p class="text-white/70">
-                Otomatik yenileme uyarilari, kullanilmayan abonelik tespiti ve aylik harcama analizleri ile abonelik bohcanizi gorunur hale getirin.
+                Otomatik yenileme uyarıları, kullanılmayan abonelik tespiti ve aylık harcama analizleri ile abonelik bohçanızı görünür hale getirin.
             </p>
         </div>
-        <p class="text-xs text-white/40">MBP 206 — Izmir Ekonomi Universitesi · Grup 2.2</p>
+        <p class="text-xs text-white/40">MBP 206 — İzmir Ekonomi Üniversitesi · Grup 2.2</p>
     </aside>
 
     @* Form panel *@
     <section class="flex-1 flex items-center justify-center px-6 py-12">
         <Card Class="w-full max-w-md" BodyClass="p-8">
             <div class="mb-8">
-                <h2 class="text-2xl font-bold text-primary-dark">Tekrar hos geldiniz</h2>
-                <p class="text-sm text-slate-500 mt-1">Devam etmek icin e-posta ve parolanizla giris yapin.</p>
+                <h2 class="text-2xl font-bold text-primary-dark">Tekrar hoş geldiniz</h2>
+                <p class="text-sm text-slate-500 mt-1">Devam etmek için e-posta ve parolanızla giriş yapın.</p>
             </div>
 
             <EditForm Model="_form" OnValidSubmit="HandleLogin">
@@ -51,7 +51,7 @@
                             Variant="Button.ButtonVariant.Primary"
                             Size="Button.ButtonSize.Lg"
                             Loading="_loading">
-                        Giris Yap
+                        Giriş Yap
                     </Button>
                 </div>
 
@@ -62,8 +62,8 @@
             </EditForm>
 
             <p class="mt-8 text-sm text-slate-600 text-center">
-                Hesabin yok mu?
-                <a href="/register" class="text-primary font-medium hover:underline">Kayit ol</a>
+                Hesabın yok mu?
+                <a href="/register" class="text-primary font-medium hover:underline">Kayıt ol</a>
             </p>
         </Card>
     </section>
@@ -84,16 +84,16 @@
         {
             var auth = await AuthApi.LoginAsync(new LoginRequest(_form.Email, _form.Password));
             await JwtState.SetAuthenticatedUserAsync(auth.Token);
-            Toasts.ShowSuccess($"Hos geldiniz, {auth.User.FirstName}.");
+            Toasts.ShowSuccess($"Hoş geldiniz, {auth.User.FirstName}.");
             Navigation.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl, forceLoad: false);
         }
         catch (ApiException ex) when (ex.IsUnauthorized)
         {
-            _error = "E-posta veya parola hatali.";
+            _error = "E-posta veya parola hatalı.";
         }
         catch (ApiException ex) when (ex.IsRateLimited)
         {
-            _error = "Cok fazla deneme. Lutfen biraz bekleyip tekrar deneyin.";
+            _error = "Çok fazla deneme. Lütfen biraz bekleyip tekrar deneyin.";
         }
         catch (ApiException ex)
         {
@@ -101,7 +101,7 @@
         }
         catch
         {
-            _error = "Beklenmeyen bir hata olustu. Lutfen sonra tekrar deneyin.";
+            _error = "Beklenmeyen bir hata oluştu. Lütfen sonra tekrar deneyin.";
         }
         finally
         {
@@ -112,7 +112,7 @@
     private sealed class LoginForm
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "E-posta gereklidir.")]
-        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Gecerli bir e-posta giriniz.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Geçerli bir e-posta giriniz.")]
         public string Email { get; set; } = "";
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Parola gereklidir.")]

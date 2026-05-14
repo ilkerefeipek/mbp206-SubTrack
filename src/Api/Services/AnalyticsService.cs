@@ -148,8 +148,8 @@ public sealed class AnalyticsService(
             var monthly = Math.Round(BillingMath.ToMonthlyAmount(s.Amount, s.BillingCycle), 2);
             insights.Add(new Insight(
                 InsightType.UnusedSubscription,
-                $"{s.Name} kullanilmiyor",
-                $"Son {user.ThresholdDays} gun icinde kullanim yok. Aylik {monthly} {s.Currency} tasarruf edebilirsiniz.",
+                $"{s.Name} kullanılmıyor",
+                $"Son {user.ThresholdDays} gün içinde kullanım yok. Aylık {monthly} {s.Currency} tasarruf edebilirsiniz.",
                 InsightSeverity.Warning,
                 RelatedSubscriptionId: s.Id,
                 PotentialSavings: monthly));
@@ -161,8 +161,8 @@ public sealed class AnalyticsService(
         {
             insights.Add(new Insight(
                 InsightType.HighSpending,
-                "Aylik harcama yuksek",
-                $"Toplam aylik abonelik harcamaniz {Math.Round(monthlyTotal, 2)} {user.PreferredCurrency}. Bu, esikten ({_highSpendingThresholdTry} {user.PreferredCurrency}) yuksek.",
+                "Aylık harcama yüksek",
+                $"Toplam aylık abonelik harcamanız {Math.Round(monthlyTotal, 2)} {user.PreferredCurrency}. Bu, eşikten ({_highSpendingThresholdTry} {user.PreferredCurrency}) yüksek.",
                 InsightSeverity.Critical));
         }
 
@@ -171,7 +171,7 @@ public sealed class AnalyticsService(
         {
             insights.Add(new Insight(
                 InsightType.UpcomingRenewal,
-                $"{s.Name} yakinda yenileniyor",
+                $"{s.Name} yakında yenileniyor",
                 $"{s.NextBilling:yyyy-MM-dd} tarihinde {s.Amount} {s.Currency} tahsil edilecek.",
                 InsightSeverity.Info,
                 RelatedSubscriptionId: s.Id));
@@ -184,7 +184,7 @@ public sealed class AnalyticsService(
             insights.Add(new Insight(
                 InsightType.DuplicateService,
                 $"{categoryName} kategorisinde {group.Count()} abonelik var",
-                $"Birden fazla {categoryName} aboneliginiz oldugu icin birini iptal etmeyi dusunebilirsiniz.",
+                $"Birden fazla {categoryName} aboneliğiniz olduğu için birini iptal etmeyi düşünebilirsiniz.",
                 InsightSeverity.Info));
         }
 

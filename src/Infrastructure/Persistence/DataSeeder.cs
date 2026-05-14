@@ -31,7 +31,7 @@ public static class DataSeeder
         var categories = new[]
         {
             new Category { Name = "Streaming",  Icon = "tv",         Color = "#EF4444", IsDefault = true, SortOrder = 1 },
-            new Category { Name = "Muzik",      Icon = "music",      Color = "#10B981", IsDefault = true, SortOrder = 2 },
+            new Category { Name = "Müzik",      Icon = "music",      Color = "#10B981", IsDefault = true, SortOrder = 2 },
             new Category { Name = "Verimlilik", Icon = "briefcase",  Color = "#0F766E", IsDefault = true, SortOrder = 3 },
             new Category { Name = "Oyun",       Icon = "gamepad",    Color = "#F59E0B", IsDefault = true, SortOrder = 4 },
             new Category { Name = "Spor",       Icon = "activity",   Color = "#14B8A6", IsDefault = true, SortOrder = 5 }
@@ -64,7 +64,7 @@ public static class DataSeeder
         await db.SaveChangesAsync(ct);
 
         var streaming = await db.Categories.SingleAsync(c => c.Name == "Streaming", ct);
-        var music = await db.Categories.SingleAsync(c => c.Name == "Muzik", ct);
+        var music = await db.Categories.SingleAsync(c => c.Name == "Müzik", ct);
         var productivity = await db.Categories.SingleAsync(c => c.Name == "Verimlilik", ct);
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
@@ -167,7 +167,7 @@ public static class DataSeeder
                 UserId = user.Id,
                 SubscriptionId = netflix.Id,
                 Type = NotificationType.RenewalReminder,
-                Message = "Netflix Premium aboneliginiz 7 gun icinde yenilenecek.",
+                Message = "Netflix Premium aboneliğiniz 7 gün içinde yenilenecek.",
                 Channel = "in-app",
                 Priority = "normal",
                 SentAt = DateTime.UtcNow.AddDays(-1)
@@ -177,7 +177,7 @@ public static class DataSeeder
                 UserId = user.Id,
                 SubscriptionId = adobe.Id,
                 Type = NotificationType.UnusedAlert,
-                Message = "Adobe Creative Cloud son 60 gundur kullanilmadi. Iptal etmeyi dusunur musunuz?",
+                Message = "Adobe Creative Cloud son 60 gündür kullanılmadı. İptal etmeyi düşünür müsünüz?",
                 Channel = "email",
                 Priority = "high",
                 SentAt = DateTime.UtcNow.AddDays(-2)
