@@ -1,0 +1,22 @@
+<div class="@($"animate-pulse bg-slate-200 {ShapeClass} {Class}")" style="@_inlineStyle" aria-hidden="true"></div>
+
+@code {
+    public enum Shape { Line, Box, Circle }
+
+    [Parameter] public Shape Variant { get; set; } = Shape.Line;
+    [Parameter] public string Class { get; set; } = "";
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+
+    private string ShapeClass => Variant switch
+    {
+        Shape.Line => "rounded-md h-3",
+        Shape.Box => "rounded-lg",
+        Shape.Circle => "rounded-full",
+        _ => ""
+    };
+
+    private string _inlineStyle =>
+        (Width is not null ? $"width: {Width};" : "") +
+        (Height is not null ? $"height: {Height};" : "");
+}

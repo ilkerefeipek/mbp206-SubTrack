@@ -1,0 +1,14 @@
+@inject NavigationManager Navigation
+
+<PageTitle>Sayfa Bulunamadi — SubTrack</PageTitle>
+
+<section class="min-h-[60vh] flex items-center justify-center">
+    <div class="text-center px-6 max-w-md">
+        <p class="text-sm uppercase tracking-wider text-primary font-semibold mb-3">404</p>
+        <h1 class="text-4xl font-bold text-primary-dark mb-3">Sayfa bulunamadi</h1>
+        <p class="text-slate-600 mb-8">Aradiginiz sayfa kaldirilmis veya hic var olmamis olabilir.</p>
+        <button class="btn-primary" @onclick="@(() => Navigation.NavigateTo("/"))">
+            Ana sayfaya don
+        </button>
+    </div>
+</section>

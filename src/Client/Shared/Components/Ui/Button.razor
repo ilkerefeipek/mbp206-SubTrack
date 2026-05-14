@@ -1,0 +1,50 @@
+@inherits ComponentBase
+
+<button type="@Type"
+        class="@CssClass"
+        disabled="@(Disabled || Loading)"
+        @onclick="OnClick">
+    @if (Loading)
+    {
+        <Spinner Size="Spinner.SizeOption.Sm" Color="@(Variant == ButtonVariant.Primary ? Spinner.ColorOption.White : Spinner.ColorOption.Primary)" />
+    }
+    else if (IconName is not null)
+    {
+        <Icon Name="@IconName" Class="w-4 h-4 mr-2" />
+    }
+    @ChildContent
+</button>
+
+@code {
+    public enum ButtonVariant { Primary, Secondary, Danger, Ghost }
+    public enum ButtonSize { Sm, Md, Lg }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Primary;
+    [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Md;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public string? IconName { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private string CssClass =>
+        $"inline-flex items-center justify-center font-semibold rounded-lg transition disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 {VariantClass()} {SizeClass()}";
+
+    private string VariantClass() => Variant switch
+    {
+        ButtonVariant.Primary => "bg-primary hover:bg-primary-dark text-white shadow-sm",
+        ButtonVariant.Secondary => "bg-white border border-slate-300 hover:bg-slate-50 text-slate-700",
+        ButtonVariant.Danger => "bg-danger hover:bg-red-700 text-white shadow-sm",
+        ButtonVariant.Ghost => "bg-transparent hover:bg-slate-100 text-slate-700",
+        _ => ""
+    };
+
+    private string SizeClass() => Size switch
+    {
+        ButtonSize.Sm => "px-3 py-1.5 text-sm",
+        ButtonSize.Md => "px-4 py-2 text-sm",
+        ButtonSize.Lg => "px-6 py-3 text-base",
+        _ => ""
+    };
+}

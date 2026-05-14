@@ -1,0 +1,31 @@
+<svg class="@SpinnerClass" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" role="status">
+    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.4 0 0 5.4 0 12h4zm2 5.3A7.9 7.9 0 0 1 4 12H0c0 3 1.1 5.8 3 7.9l3-2.6z"></path>
+</svg>
+
+@code {
+    public enum SizeOption { Sm, Md, Lg }
+    public enum ColorOption { Primary, White, Slate }
+
+    [Parameter] public SizeOption Size { get; set; } = SizeOption.Md;
+    [Parameter] public ColorOption Color { get; set; } = ColorOption.Primary;
+
+    private string SpinnerClass =>
+        $"animate-spin {SizeClass()} {ColorClass()}";
+
+    private string SizeClass() => Size switch
+    {
+        SizeOption.Sm => "w-4 h-4",
+        SizeOption.Md => "w-6 h-6",
+        SizeOption.Lg => "w-10 h-10",
+        _ => ""
+    };
+
+    private string ColorClass() => Color switch
+    {
+        ColorOption.Primary => "text-primary",
+        ColorOption.White => "text-white",
+        ColorOption.Slate => "text-slate-500",
+        _ => ""
+    };
+}
